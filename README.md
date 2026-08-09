@@ -5,7 +5,8 @@ Registro de treino A/B/C com persistência em `localStorage`. Página única, se
 ## O que faz
 
 - **Treinos A, B e C** já cadastrados, com séries e repetições alvo.
-- **Uma linha por série**: `−` `carga` `+` `✓`, com alvos de 38–58px de largura por 42px de altura. Os botões `−`/`+` (passo de 2,5kg) existem para você quase nunca precisar abrir o teclado.
+- **Uma linha por série**: `−` `carga` `+` `✓`, com alvos de 38–58px de largura por 42px de altura. Os `−`/`+` andam de 2,5 em 2,5 kg.
+- **Teclado numérico próprio**: tocar na carga abre uma folha na parte de baixo da tela com teclas grandes e atalhos (−2,5 / +2,5 / +5 / +10). Não existe `<input>` de texto na lista — veja *Por que um teclado próprio* abaixo.
 - **Destaque "agora"** no primeiro exercício incompleto. Ao terminar um exercício ele se recolhe num resumo verde e a tela rola sozinha para o próximo.
 - **Carga herdada**: ao marcar uma série, a carga da anterior é preenchida sozinha. O botão *"↺ Repetir as cargas da última vez"* preenche o exercício inteiro com o que você fez da última vez.
 - **Descanso automático** (50s por padrão, ajustável em Ajustes): começa ao marcar uma série, com barra fixa mostrando a contagem, `Pular` e `+15s`.
@@ -44,6 +45,14 @@ Os exercícios ficam na constante `PLAN`, no início do `<script>` do `index.htm
 - `bw:true` — exercício de peso corporal; o campo de carga mostra "livre".
 
 O tempo de descanso se muda pela tela **Ajustes**, não no código.
+
+## Por que um teclado próprio
+
+O Safari do iPhone dá zoom ao focar um campo de texto, e o zoom empurrava o botão `✓` para fora da tela. A receita conhecida — `font-size` de no mínimo 16px — **não resolveu**: o campo estava com 17px e o zoom continuou.
+
+Em vez de continuar tentando adivinhar o gatilho, a lista simplesmente não tem mais nenhum `<input>`. A carga é um `<button>` que abre uma folha com teclado próprio. Sem campo de texto não há foco, não há teclado nativo e o zoom fica impossível por construção. De quebra, o teclado do sistema também não cobre mais metade da tela.
+
+O único `<input>` que sobrou é o seletor de data no topo, que abre um seletor de roda e não um teclado.
 
 ## Sobre o alarme (e o iPhone)
 

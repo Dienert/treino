@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -68,7 +68,8 @@
     padding:7px 13px; font-size:13.5px; font-weight:600; white-space:nowrap;
   }
   .datechip.past span{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
-  .datechip input{position:absolute; inset:0; opacity:0; width:100%; height:100%; border:0}
+  /* font-size:16px também aqui: é o limiar abaixo do qual o Safari dá zoom */
+  .datechip input{position:absolute; inset:0; opacity:0; width:100%; height:100%; border:0; font-size:16px}
 
   /* minmax(0,1fr) — sem isso o texto `nowrap` do subtítulo impõe um min-content
      maior que a coluna e as abas estouram a largura da tela */
@@ -154,23 +155,22 @@
     display:grid; place-items:center; padding:0;
   }
   .step:active{transform:scale(.9); background:var(--accent-soft); color:var(--accent)}
+  /* O campo é um BOTÃO, não um <input>: o Safari do iPhone dá zoom ao focar
+     qualquer campo de texto, e nenhum ajuste de font-size resolve isso de
+     forma confiável. Sem <input> não há foco, teclado nativo nem zoom. */
   .field{
-    flex:1; min-width:0; display:flex; align-items:center;
-    background:var(--bg); border:1.5px solid var(--border); border-radius:11px; overflow:hidden;
+    flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:5px;
+    background:var(--bg); border:1.5px solid var(--border); border-radius:11px;
+    padding:10px 6px; height:42px; overflow:hidden;
   }
   .srow.on .field{border-color:var(--done-line); background:var(--done-soft)}
-  /* 17px: abaixo de 16px o Safari do iPhone dá zoom ao focar o campo */
-  .field input{
-    flex:1; min-width:0; width:100%; border:0; background:transparent; color:var(--text);
-    font:inherit; font-size:17px; font-weight:700; text-align:center;
-    padding:10px 2px; font-variant-numeric:tabular-nums;
+  .field.editing{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft)}
+  .field .val{
+    font-size:17px; font-weight:700; font-variant-numeric:tabular-nums;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .field input::-webkit-outer-spin-button,.field input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
-  .field input{-moz-appearance:textfield}
-  .field input::placeholder{color:var(--faint); font-weight:500; font-size:14px}
-  .field input:focus{outline:none}
-  .field:focus-within{border-color:var(--accent)}
-  .field .u{font-size:11px; color:var(--muted); padding:0 9px 0 0; font-weight:700}
+  .field.vazio .val{color:var(--faint); font-weight:500; font-size:14px}
+  .field .u{font-size:11px; color:var(--muted); font-weight:700; flex:none}
   .mark{
     flex:none; width:58px; height:42px; border-radius:11px; font-size:19px; line-height:1;
     background:var(--surface-2); border:1.5px solid var(--border); color:var(--faint);
@@ -241,6 +241,45 @@
     padding:18px 46px; font-size:18px; font-weight:800; box-shadow:0 8px 30px rgba(0,0,0,.3);
   }
   .alarm button:active{transform:scale(.95)}
+
+  /* ============ teclado numérico próprio ============ */
+  .backdrop{
+    position:fixed; inset:0; z-index:69; background:rgba(0,0,0,.45);
+    opacity:0; pointer-events:none; transition:opacity .22s;
+  }
+  .backdrop.show{opacity:1; pointer-events:auto}
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:70;
+    background:var(--surface); border-top:1px solid var(--border); border-radius:20px 20px 0 0;
+    padding:0 12px calc(12px + env(safe-area-inset-bottom));
+    transform:translateY(102%); transition:transform .26s cubic-bezier(.3,1,.5,1);
+    box-shadow:0 -10px 40px rgba(0,0,0,.28); max-width:600px; margin:0 auto;
+  }
+  .sheet.show{transform:translateY(0)}
+  .pad-head{display:flex; align-items:center; gap:10px; padding:14px 4px 10px}
+  .pad-head .t{flex:1; min-width:0; font-size:13.5px; font-weight:650; line-height:1.3}
+  .pad-head .t small{display:block; font-weight:500; color:var(--muted); font-size:12px}
+  .pad-done{
+    flex:none; background:var(--accent); border:0; color:#fff; border-radius:10px;
+    padding:10px 18px; font-size:14.5px; font-weight:700;
+  }
+  .pad-val{
+    text-align:center; padding:6px 0 12px; font-variant-numeric:tabular-nums;
+    font-size:42px; font-weight:800; letter-spacing:-.03em; line-height:1;
+  }
+  .pad-val span{font-size:16px; font-weight:700; color:var(--muted); margin-left:5px}
+  .pad-quick{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; margin-bottom:9px}
+  .pad-quick button{
+    background:var(--accent-soft); border:0; color:var(--accent); border-radius:11px;
+    padding:11px 2px; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums;
+  }
+  .pad-keys{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px}
+  .pad-keys button{
+    background:var(--surface-2); border:0; border-radius:12px; padding:15px 2px;
+    font-size:23px; font-weight:600; font-variant-numeric:tabular-nums;
+  }
+  .pad-keys button:active,.pad-quick button:active{transform:scale(.95); filter:brightness(.94)}
+  .pad-keys button.wipe{color:var(--alarm); font-size:19px}
 
   /* ============ toast ============ */
   .toast{
@@ -384,6 +423,17 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="backdrop" id="padBack"></div>
+<div class="sheet" id="pad" role="dialog" aria-label="Digitar carga">
+  <div class="pad-head">
+    <div class="t" id="padTitle"></div>
+    <button class="pad-done" id="padDone">Pronto</button>
+  </div>
+  <div class="pad-val"><b id="padVal">0</b><span id="padUnit">kg</span></div>
+  <div class="pad-quick" id="padQuick"></div>
+  <div class="pad-keys" id="padKeys"></div>
+</div>
+
 <nav>
   <button data-view="treino" aria-current="true"><em>🏋️</em>Treino</button>
   <button data-view="history"><em>📅</em>Histórico</button>
@@ -431,6 +481,8 @@ const PLAN = {
 const LETTERS = ["A","B","C"];
 const EX_BY_ID = Object.fromEntries(LETTERS.flatMap(l => PLAN[l].ex.map(e => [e.id, e])));
 const unitOf = ex => ex.unit === "s" ? "s" : "kg";
+/** Guardamos a carga com ponto (número); mostramos com vírgula. */
+const fmtLoad = v => String(v).replace(".", ",");
 
 /* ============================================================
    Estado + persistência
@@ -603,7 +655,7 @@ function renderList(){
     const prev = lastPerformed(ex.id);
 
     const sub = prev
-      ? `Última vez (${esc(relDate(prev.date))}): <b>${prev.sets.map(x => x.load ? esc(x.load)+u : "✓").join(" · ")}</b>`
+      ? `Última vez (${esc(relDate(prev.date))}): <b>${prev.sets.map(x => x.load ? esc(fmtLoad(x.load))+u : "✓").join(" · ")}</b>`
       : `${ex.sets} séries × ${esc(ex.reps)}${u === "s" ? "s" : " reps"}`;
 
     const reuse = prev && prev.sets.some(x => x.load) && feitas === 0
@@ -614,15 +666,14 @@ function renderList(){
       // exercício de peso corporal não tem o que incrementar — o campo fica livre
       const steps = ex.bw ? "" : `<button class="step" data-d="-1" aria-label="Diminuir carga">−</button>`;
       const stepsR = ex.bw ? "" : `<button class="step" data-d="1" aria-label="Aumentar carga">+</button>`;
+      const val = st && st.load ? st.load : "";
       return `<div class="srow ${on ? "on" : ""}" data-ex="${ex.id}" data-n="${n}">
         <span class="snum">${n+1}</span>
         ${steps}
-        <label class="field">
-          <input type="number" inputmode="decimal" step="${u === "s" ? 5 : 2.5}" min="0" enterkeyhint="done"
-                 placeholder="${ex.bw ? "livre" : "—"}" value="${st ? esc(st.load) : ""}"
-                 aria-label="Carga da série ${n+1} de ${esc(ex.name)}">
+        <button class="field ${val ? "" : "vazio"}" aria-label="Carga da série ${n+1} de ${esc(ex.name)}">
+          <span class="val">${val ? esc(fmtLoad(val)) : (ex.bw ? "livre" : "—")}</span>
           <span class="u">${u}</span>
-        </label>
+        </button>
         ${stepsR}
         <button class="mark" aria-pressed="${!!on}" aria-label="Marcar série ${n+1}">${on ? "✓" : "○"}</button>
       </div>`;
@@ -662,6 +713,13 @@ function refreshCard(exId){
   return complete;
 }
 
+/** Reflete a carga de uma série no DOM da linha. */
+function paintRow(row, load, ex){
+  const field = row.querySelector(".field");
+  field.querySelector(".val").textContent = load ? fmtLoad(load) : (ex.bw ? "livre" : "—");
+  field.classList.toggle("vazio", !load);
+}
+
 /** Move o destaque "agora" para o primeiro exercício incompleto. */
 function refreshNow(scroll){
   const now = nextIndex();
@@ -697,7 +755,7 @@ elList.addEventListener("click", e => {
       const src = prev.sets[n] || prev.sets[prev.sets.length - 1];
       if (src && src.load) {
         st.load = src.load;
-        card.querySelectorAll(".srow")[n].querySelector("input").value = src.load;
+        paintRow(card.querySelectorAll(".srow")[n], src.load, ex);
       }
     });
     reuse.remove(); save(); toast("Cargas preenchidas — ajuste se precisar");
@@ -715,8 +773,16 @@ elList.addEventListener("click", e => {
       ? (parseFloat(lastPerformed(ex.id)?.sets[n]?.load) || 0)   // parte da última carga
       : atual;
     arr[n].load = String(Math.max(0, Math.round((base + inc) * 10) / 10));
-    row.querySelector("input").value = arr[n].load;
+    paintRow(row, arr[n].load, ex);
     save();
+    return;
+  }
+
+  // campo de carga: abre o teclado próprio da página
+  const field = e.target.closest(".field");
+  if (field) {
+    const row = field.closest(".srow");
+    openPad(EX_BY_ID[row.dataset.ex], +row.dataset.n, row);
     return;
   }
 
@@ -735,7 +801,7 @@ elList.addEventListener("click", e => {
     if (st.done && !st.load) {
       // herda a carga da série anterior desta sessão, ou da última vez que treinou
       const src = arr.slice(0, n).reverse().find(x => x.load) || (lastPerformed(ex.id)?.sets[n]);
-      if (src && src.load) { st.load = src.load; row.querySelector("input").value = src.load; }
+      if (src && src.load) { st.load = src.load; paintRow(row, src.load, ex); }
     }
 
     const complete = refreshCard(ex.id);
@@ -761,24 +827,81 @@ function card_collapse(exId){
   if (card) setTimeout(() => card.classList.add("collapsed"), 260);
 }
 
-elList.addEventListener("input", e => {
-  const input = e.target.closest("input");
-  if (!input) return;
-  const row = input.closest(".srow");
-  setsOf(session(true), EX_BY_ID[row.dataset.ex], true)[+row.dataset.n].load = input.value;
+/* ============================================================
+   Teclado numérico próprio
+   Existe para não usar <input>: o Safari do iPhone dá zoom ao focar
+   qualquer campo de texto, empurrando o botão ✓ para fora da tela.
+   ============================================================ */
+const elPad = $("pad"), elPadBack = $("padBack");
+let padEx = null, padN = 0, padRow = null, padBuf = "", padFresh = true;
+
+function openPad(ex, n, row){
+  padEx = ex; padN = n; padRow = row;
+  const arr = setsOf(session(true), ex, true);
+  padBuf = arr[n].load || "";
+  padFresh = true;                       // o primeiro dígito substitui o valor atual
+  const u = unitOf(ex);
+
+  $("padTitle").innerHTML = `${esc(ex.name)}<small>Série ${n+1} de ${ex.sets} · alvo ${esc(ex.reps)}${u === "s" ? "s" : " reps"}</small>`;
+  $("padUnit").textContent = u;
+  const passos = u === "s" ? [-5, 5, 10, 15] : [-2.5, 2.5, 5, 10];
+  $("padQuick").innerHTML = passos.map(v =>
+    `<button data-q="${v}">${v > 0 ? "+" : "−"}${String(Math.abs(v)).replace(".", ",")}</button>`).join("");
+  $("padKeys").innerHTML =
+    [1,2,3,4,5,6,7,8,9].map(d => `<button data-k="${d}">${d}</button>`).join("") +
+    `<button data-k=".">,</button><button data-k="0">0</button><button class="wipe" data-k="del">⌫</button>`;
+
+  row.querySelector(".field").classList.add("editing");
+  elPad.classList.add("show"); elPadBack.classList.add("show");
+  paintPad();
+
+  // a folha cobre a metade de baixo: sobe a página para a linha editada continuar visível
+  requestAnimationFrame(() => {
+    const limite = window.innerHeight - elPad.offsetHeight - 12;
+    const r = row.getBoundingClientRect();
+    if (r.bottom > limite) window.scrollBy({ top: r.bottom - limite, behavior:"smooth" });
+  });
+}
+function paintPad(){
+  $("padVal").textContent = padBuf === "" ? "0" : padBuf.replace(".", ",");
+}
+function commitPad(){
+  if (!padEx) return;
+  const arr = setsOf(session(true), padEx, true);
+  arr[padN].load = padBuf;
+  paintRow(padRow, padBuf, padEx);
   save();
+}
+function closePad(){
+  commitPad();
+  if (padRow) padRow.querySelector(".field").classList.remove("editing");
+  elPad.classList.remove("show"); elPadBack.classList.remove("show");
+  padEx = null; padRow = null;
+}
+$("padKeys").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  const k = b.dataset.k;
+  if (k === "del") { padBuf = padBuf.slice(0, -1); padFresh = false; }
+  else {
+    if (padFresh) { padBuf = ""; padFresh = false; }
+    if (k === "." && padBuf.includes(".")) return;
+    if (k === "." && padBuf === "") padBuf = "0";
+    if (padBuf.replace(".", "").length >= 5) return;      // trava em 5 dígitos
+    padBuf += k;
+  }
+  paintPad(); commitPad();
 });
-// Enter fecha o teclado em vez de submeter
-elList.addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
-// o teclado do iPhone cobre metade da tela: centraliza a linha para o ✓ não sumir
-elList.addEventListener("focusin", e => {
-  const row = e.target.closest(".srow");
-  if (row) setTimeout(() => row.scrollIntoView({ block:"center", behavior:"smooth" }), 320);
+$("padQuick").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  const base = parseFloat(padBuf) || 0;
+  padBuf = String(Math.max(0, Math.round((base + parseFloat(b.dataset.q)) * 10) / 10));
+  padFresh = false;
+  paintPad(); commitPad();
 });
-// selecionar o valor todo evita ter que apagar dígito por dígito
-elList.addEventListener("focusin", e => {
-  if (e.target.matches(".field input")) setTimeout(() => e.target.select(), 30);
-});
+$("padDone").addEventListener("click", closePad);
+elPadBack.addEventListener("click", closePad);
 
 /** Texto "Supino reto · série 2" da próxima série pendente — usado no alarme. */
 function nextSetLabel(){
@@ -1050,7 +1173,7 @@ function renderHistory(){
       const feitas = (s.sets[ex.id] || []).slice(0, ex.sets).filter(x => x.done);
       if (!feitas.length) return "";
       return `<div><span>${esc(ex.name)}</span><span>${
-        feitas.map(x => x.load ? esc(x.load)+unitOf(ex) : "✓").join(" · ")}</span></div>`;
+        feitas.map(x => x.load ? esc(fmtLoad(x.load))+unitOf(ex) : "✓").join(" · ")}</span></div>`;
     }).join("");
     return `<article class="hitem" data-key="${esc(keyOf(s.date, s.workout))}">
       <div class="hrow2">
@@ -1085,6 +1208,7 @@ document.querySelector("nav").addEventListener("click", e => {
   go(b.dataset.view);
 });
 function go(v){
+  closePad();
   view = v;
   for (const id of ["treino","history","config"]) $("v-"+id).hidden = id !== v;
   document.querySelectorAll("nav button").forEach(b =>
@@ -1098,10 +1222,11 @@ function go(v){
 $("tabs").addEventListener("click", e => {
   const b = e.target.closest(".tab");
   if (!b || b.dataset.w === tab) return;
-  tab = b.dataset.w;
+  closePad(); tab = b.dataset.w;
   stopRest(); renderHeader(); renderList(); window.scrollTo(0,0);
 });
 $("date").addEventListener("change", e => {
+  closePad();
   date = e.target.value || todayISO();
   stopRest(); renderHeader(); renderList();
 });
