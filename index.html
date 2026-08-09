@@ -59,8 +59,16 @@
     padding-top:env(safe-area-inset-top);
   }
   .hrow{display:flex; align-items:center; gap:10px; padding:11px 0 12px}
-  .hrow h1{font-size:17px; font-weight:700; letter-spacing:-.02em; margin:0; flex:1}
-  .hrow h1 span{color:var(--muted); font-weight:500}
+  .pessoas{
+    display:flex; flex:1; min-width:0; gap:3px; margin:0; padding:3px;
+    background:var(--surface-2); border-radius:99px;
+  }
+  .pessoas button{
+    flex:1; min-width:0; border:0; background:transparent; border-radius:99px;
+    padding:8px 6px; font-size:14px; font-weight:700; letter-spacing:-.01em; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .pessoas button[aria-pressed="true"]{background:var(--accent); color:#fff}
 
   .datechip{position:relative; display:inline-flex; align-items:center}
   .datechip span{
@@ -74,6 +82,11 @@
   /* minmax(0,1fr) — sem isso o texto `nowrap` do subtítulo impõe um min-content
      maior que a coluna e as abas estouram a largura da tela */
   .tabs{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding-bottom:11px}
+  .tabs.apertado{grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px}
+  .tabs.apertado .tab{padding:7px 2px 8px}
+  .tabs.apertado .tab b{font-size:17px}
+  .tabs.apertado .tab i{font-size:9px}
+  .tabs.apertado .flag{font-size:8px; padding:2px 5px}
   .tab{
     position:relative; min-width:0; background:var(--surface); border:1px solid var(--border);
     border-radius:13px; padding:8px 4px 9px; text-align:center; line-height:1.2;
@@ -333,7 +346,7 @@
 <header>
   <div class="wrap">
     <div class="hrow">
-      <h1>Treino <span>Diénert</span></h1>
+      <h1 class="pessoas" id="pessoas"></h1>
       <label class="datechip" id="datechip">
         <span id="dateLabel">hoje</span>
         <input type="date" id="date" aria-label="Data do treino">
@@ -449,37 +462,81 @@
    NUNCA troque o `id` de um exercício existente: ele é a chave
    do histórico e o registro antigo se perde.
    ============================================================ */
-const PLAN = {
-  A: { short:"Peito · Tríceps", ex:[
-    { id:"a1", name:"Aquecimento manguito rotador (elástico)", sets:2, reps:"15", bw:true },
-    { id:"a2", name:"Supino reto halteres pegada neutra",      sets:3, reps:"12" },
-    { id:"a3", name:"Crucifixo máquina",                       sets:3, reps:"12" },
-    { id:"a4", name:"Elevação lateral halteres leves",         sets:3, reps:"15" },
-    { id:"a5", name:"Tríceps polia com corda",                 sets:3, reps:"12" },
-    { id:"a6", name:"Tríceps unilateral na polia",             sets:3, reps:"15" },
-    { id:"a7", name:"Prancha",                                 sets:3, reps:"30", unit:"s", bw:true },
-  ]},
-  B: { short:"Costas · Bíceps", ex:[
-    { id:"b1", name:"Puxada frontal (pegada supinada)", sets:3, reps:"12" },
-    { id:"b2", name:"Remada baixa máquina",             sets:3, reps:"12" },
-    { id:"b3", name:"Face pull com corda (leve)",       sets:3, reps:"15" },
-    { id:"b4", name:"Rosca direta barra W",             sets:3, reps:"12" },
-    { id:"b5", name:"Rosca martelo",                    sets:3, reps:"12" },
-    { id:"b6", name:"Abdominal supra",                  sets:3, reps:"15", bw:true },
-  ]},
-  C: { short:"Pernas", ex:[
-    { id:"c1", name:"Leg press",                         sets:4, reps:"12" },
-    { id:"c2", name:"Cadeira extensora",                 sets:3, reps:"15" },
-    { id:"c3", name:"Cadeira flexora",                   sets:3, reps:"12" },
-    { id:"c4", name:"Agachamento livre (peso corporal)", sets:3, reps:"20", bw:true },
-    { id:"c5", name:"Abdutora",                          sets:3, reps:"20" },
-    { id:"c6", name:"Adutora",                           sets:3, reps:"15" },
-    { id:"c7", name:"Panturrilha em pé",                 sets:4, reps:"20" },
-    { id:"c8", name:"Abdominal infra",                   sets:3, reps:"15", bw:true },
-  ]},
+const PESSOAS = {
+  dienert: { nome:"Diénert", planos:{
+    A: { short:"Peito · Tríceps", ex:[
+      { id:"a1", name:"Aquecimento manguito rotador (elástico)", sets:2, reps:"15", bw:true },
+      { id:"a2", name:"Supino reto halteres pegada neutra",      sets:3, reps:"12" },
+      { id:"a3", name:"Crucifixo máquina",                       sets:3, reps:"12" },
+      { id:"a4", name:"Elevação lateral halteres leves",         sets:3, reps:"15" },
+      { id:"a5", name:"Tríceps polia com corda",                 sets:3, reps:"12" },
+      { id:"a6", name:"Tríceps unilateral na polia",             sets:3, reps:"15" },
+      { id:"a7", name:"Prancha",                                 sets:3, reps:"30", unit:"s", bw:true },
+    ]},
+    B: { short:"Costas · Bíceps", ex:[
+      { id:"b1", name:"Puxada frontal (pegada supinada)", sets:3, reps:"12" },
+      { id:"b2", name:"Remada baixa máquina",             sets:3, reps:"12" },
+      { id:"b3", name:"Face pull com corda (leve)",       sets:3, reps:"15" },
+      { id:"b4", name:"Rosca direta barra W",             sets:3, reps:"12" },
+      { id:"b5", name:"Rosca martelo",                    sets:3, reps:"12" },
+      { id:"b6", name:"Abdominal supra",                  sets:3, reps:"15", bw:true },
+    ]},
+    C: { short:"Pernas", ex:[
+      { id:"c1", name:"Leg press",                         sets:4, reps:"12" },
+      { id:"c2", name:"Cadeira extensora",                 sets:3, reps:"15" },
+      { id:"c3", name:"Cadeira flexora",                   sets:3, reps:"12" },
+      { id:"c4", name:"Agachamento livre (peso corporal)", sets:3, reps:"20", bw:true },
+      { id:"c5", name:"Abdutora",                          sets:3, reps:"20" },
+      { id:"c6", name:"Adutora",                           sets:3, reps:"15" },
+      { id:"c7", name:"Panturrilha em pé",                 sets:4, reps:"20" },
+      { id:"c8", name:"Abdominal infra",                   sets:3, reps:"15", bw:true },
+    ]},
+  }},
+
+  cida: { nome:"Cida", planos:{
+    A: { short:"Quadríceps", ex:[
+      { id:"ca1", name:"Agachamento com halteres", sets:3, reps:"10–12" },
+      { id:"ca2", name:"Leg press",                sets:3, reps:"12" },
+      { id:"ca3", name:"Cadeira extensora",        sets:3, reps:"15" },
+      { id:"ca4", name:"Afundo livre (cada perna)",sets:3, reps:"10" },
+      { id:"ca5", name:"Cadeira abdutora",         sets:3, reps:"15–20" },
+      { id:"ca6", name:"Panturrilha em pé",        sets:4, reps:"15" },
+    ]},
+    B: { short:"Costas", ex:[
+      { id:"cb1", name:"Puxada frente na polia",         sets:3, reps:"10–12" },
+      { id:"cb2", name:"Remada baixa",                   sets:3, reps:"12" },
+      { id:"cb3", name:"Remada articulada",              sets:3, reps:"10" },
+      { id:"cb4", name:"Rosca direta na barra",          sets:3, reps:"12" },
+      { id:"cb5", name:"Rosca alternada com halteres",   sets:3, reps:"12" },
+      { id:"cb6", name:"Prancha",                        sets:3, reps:"30–45", unit:"s", bw:true },
+    ]},
+    C: { short:"Posterior", ex:[
+      { id:"cc1", name:"Cadeira flexora",                    sets:3, reps:"12" },
+      { id:"cc2", name:"Stiff com halteres",                 sets:3, reps:"10" },
+      { id:"cc3", name:"Elevação pélvica (hip thrust)",      sets:4, reps:"10–12" },
+      { id:"cc4", name:"Glúteo na polia (cada perna)",       sets:3, reps:"15" },
+      { id:"cc5", name:"Abdutora",                           sets:3, reps:"20" },
+      { id:"cc6", name:"Panturrilha no leg",                 sets:4, reps:"15" },
+    ]},
+    D: { short:"Peito · Ombro", ex:[
+      { id:"cd1", name:"Supino máquina",                sets:3, reps:"12" },
+      { id:"cd2", name:"Crucifixo máquina",             sets:3, reps:"15" },
+      { id:"cd3", name:"Desenvolvimento",               sets:3, reps:"10–12" },
+      { id:"cd4", name:"Elevação lateral",              sets:3, reps:"15" },
+      { id:"cd5", name:"Tríceps corda",                 sets:3, reps:"12" },
+      { id:"cd6", name:"Tríceps francês com halter",    sets:3, reps:"12" },
+    ]},
+  }},
 };
-const LETTERS = ["A","B","C"];
-const EX_BY_ID = Object.fromEntries(LETTERS.flatMap(l => PLAN[l].ex.map(e => [e.id, e])));
+/** Todos os exercícios de todo mundo — os ids são únicos entre as pessoas. */
+const EX_BY_ID = Object.fromEntries(
+  Object.values(PESSOAS).flatMap(p => Object.values(p.planos).flatMap(t => t.ex.map(e => [e.id, e])))
+);
+const planosDe = p => PESSOAS[p].planos;
+
+let pessoa = "dienert";
+let PLAN = planosDe(pessoa);
+let LETTERS = Object.keys(PLAN);
 const unitOf = ex => ex.unit === "s" ? "s" : "kg";
 /** Guardamos a carga com ponto (número); mostramos com vírgula. */
 const fmtLoad = v => String(v).replace(".", ",");
@@ -491,13 +548,13 @@ const KEY = "treino-dienert:v1";        // mesmo formato da v1 — histórico an
 const PREF = "treino-dienert:prefs";
 
 let db = { sessions: {} };
-let prefs = { rest: 50, theme: "auto" };
+let prefs = { rest: 50, theme: "auto", pessoa: "dienert" };
 let tab = "A", date = todayISO(), view = "treino";
 let saveTimer = null;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const keyOf = (d, w) => `${d}|${w}`;
+const keyOf = (d, p, w) => `${d}|${p}|${w}`;
 
 function todayISO(){
   const d = new Date();
@@ -511,6 +568,24 @@ function load(){
     if (p && typeof p === "object" && p.sessions) db = p;
   } catch (e) { console.warn("dados ilegíveis:", e); }
   try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREF) || "{}")); } catch (e) {}
+  migrar();
+}
+
+/** As chaves antigas eram `data|treino`, de quando só havia o Diénert.
+ *  Passam a ser `data|pessoa|treino`, sem perder nada do histórico. */
+function migrar(){
+  let mexeu = false;
+  for (const k of Object.keys(db.sessions)) {
+    const partes = k.split("|");
+    if (partes.length !== 2) { if (!db.sessions[k].pessoa) db.sessions[k].pessoa = partes[1]; continue; }
+    const [d, w] = partes;
+    const s = db.sessions[k];
+    s.pessoa = "dienert";
+    db.sessions[keyOf(d, "dienert", w)] = s;
+    delete db.sessions[k];
+    mexeu = true;
+  }
+  if (mexeu) save();
 }
 function save(){
   clearTimeout(saveTimer);
@@ -522,10 +597,12 @@ function save(){
 const savePrefs = () => localStorage.setItem(PREF, JSON.stringify(prefs));
 
 function session(create){
-  const k = keyOf(date, tab);
-  if (!db.sessions[k] && create) db.sessions[k] = { date, workout:tab, sets:{}, done:false, finishedAt:null };
+  const k = keyOf(date, pessoa, tab);
+  if (!db.sessions[k] && create) db.sessions[k] = { date, pessoa, workout:tab, sets:{}, done:false, finishedAt:null };
   return db.sessions[k];
 }
+/** Planos da pessoa dona da sessão — o histórico mistura as duas. */
+const planoDaSessao = s => (PESSOAS[s.pessoa] || PESSOAS.dienert).planos[s.workout];
 function setsOf(s, ex, create){
   if (!s) return null;
   if (!s.sets[ex.id]) {
@@ -541,7 +618,7 @@ function lastPerformed(exId){
   let best = null;
   for (const k in db.sessions) {
     const s = db.sessions[k];
-    if (s.date >= date) continue;
+    if (s.pessoa !== pessoa || s.date >= date) continue;
     const arr = s.sets[exId];
     if (arr && arr.some(x => x.done) && (!best || s.date > best.date)) best = s;
   }
@@ -585,25 +662,33 @@ function suggested(){
   let last = null;
   for (const k in db.sessions) {
     const s = db.sessions[k];
-    if (!s.done) continue;
+    if (!s.done || s.pessoa !== pessoa) continue;
     if (!last || s.date > last.date || (s.date === last.date && (s.finishedAt||0) > (last.finishedAt||0))) last = s;
   }
-  return last ? LETTERS[(LETTERS.indexOf(last.workout) + 1) % 3] : "A";
+  if (!last) return LETTERS[0];
+  const i = LETTERS.indexOf(last.workout);
+  return i < 0 ? LETTERS[0] : LETTERS[(i + 1) % LETTERS.length];
 }
 
 /* ============================================================
    Header
    ============================================================ */
 function renderHeader(){
+  $("pessoas").innerHTML = Object.entries(PESSOAS).map(([id, p]) =>
+    `<button data-p="${id}" aria-pressed="${id===pessoa}">${esc(p.nome)}</button>`).join("");
+
   const sug = suggested();
+  // com 4 treinos não cabe "Treino A" na coluna — vira só a letra
+  const curto = LETTERS.length > 3;
+  $("tabs").classList.toggle("apertado", curto);
   $("tabs").innerHTML = LETTERS.map(l => {
-    const s = db.sessions[keyOf(date, l)];
+    const s = db.sessions[keyOf(date, pessoa, l)];
     const c = count(s, l);
     const finished = s && s.done;
     return `<button class="tab" role="tab" data-w="${l}" aria-selected="${l===tab}">
       ${l === sug && !c.done ? '<span class="flag">próximo</span>' : ""}
       ${finished ? '<span class="ok">✓</span>' : ""}
-      <b>Treino ${l}</b><i>${esc(PLAN[l].short)}</i>
+      <b>${curto ? l : "Treino " + l}</b><i>${esc(PLAN[l].short)}</i>
     </button>`;
   }).join("");
 
@@ -1137,7 +1222,7 @@ $("btnFinish").addEventListener("click", () => {
    Histórico
    ============================================================ */
 function sessionStats(s){
-  const plan = PLAN[s.workout];
+  const plan = planoDaSessao(s);
   if (!plan) return { done:0, total:0, volume:0 };
   let done = 0, total = 0, volume = 0;
   for (const ex of plan.ex) {
@@ -1153,7 +1238,7 @@ function sessionStats(s){
 }
 function renderHistory(){
   const all = Object.values(db.sessions)
-    .filter(s => PLAN[s.workout] && sessionStats(s).done > 0)
+    .filter(s => s.pessoa === pessoa && planoDaSessao(s) && sessionStats(s).done > 0)
     .sort((a,b) => b.date.localeCompare(a.date));
 
   const cutoff = new Date(Date.now() - 30*86400000).toISOString().slice(0,10);
@@ -1169,13 +1254,13 @@ function renderHistory(){
   }
   $("history").innerHTML = all.map(s => {
     const st = sessionStats(s);
-    const detail = PLAN[s.workout].ex.map(ex => {
+    const detail = planoDaSessao(s).ex.map(ex => {
       const feitas = (s.sets[ex.id] || []).slice(0, ex.sets).filter(x => x.done);
       if (!feitas.length) return "";
       return `<div><span>${esc(ex.name)}</span><span>${
         feitas.map(x => x.load ? esc(fmtLoad(x.load))+unitOf(ex) : "✓").join(" · ")}</span></div>`;
     }).join("");
-    return `<article class="hitem" data-key="${esc(keyOf(s.date, s.workout))}">
+    return `<article class="hitem" data-key="${esc(keyOf(s.date, s.pessoa, s.workout))}">
       <div class="hrow2">
         <span class="badge">${s.workout}</span>
         <span class="hwhen">${esc(fmtDate(s.date))}
@@ -1225,6 +1310,25 @@ $("tabs").addEventListener("click", e => {
   closePad(); tab = b.dataset.w;
   stopRest(); renderHeader(); renderList(); window.scrollTo(0,0);
 });
+
+$("pessoas").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b || b.dataset.p === pessoa) return;
+  closePad(); stopRest();
+  trocarPessoa(b.dataset.p);
+  if (view === "history") renderHistory();
+  window.scrollTo(0,0);
+});
+function trocarPessoa(p){
+  pessoa = p;
+  prefs.pessoa = p; savePrefs();
+  PLAN = planosDe(p);
+  LETTERS = Object.keys(PLAN);
+  document.title = "Treino " + PESSOAS[p].nome;
+  // abre no treino já começado hoje; senão, no sugerido pelo ciclo
+  tab = LETTERS.find(l => db.sessions[keyOf(date, p, l)]) || suggested();
+  renderHeader(); renderList();
+}
 $("date").addEventListener("change", e => {
   closePad();
   date = e.target.value || todayISO();
@@ -1273,9 +1377,9 @@ function renderDiag(){
   vib.style.color = navigator.vibrate ? "var(--done)" : "var(--muted)";
 }
 $("btnClearDay").addEventListener("click", () => {
-  const k = keyOf(date, tab);
+  const k = keyOf(date, pessoa, tab);
   if (!db.sessions[k]) { toast("Não há nada registrado neste dia"); return; }
-  if (!confirm(`Apagar o Treino ${tab} de ${fmtDate(date)}?`)) return;
+  if (!confirm(`Apagar o Treino ${tab} de ${PESSOAS[pessoa].nome} em ${fmtDate(date)}?`)) return;
   delete db.sessions[k];
   save(); renderHeader(); renderList(); go("treino"); toast("Registro apagado");
 });
@@ -1317,10 +1421,7 @@ function toast(msg){
    ============================================================ */
 load();
 applyTheme();
-// abre no treino já começado hoje; senão, no sugerido pelo ciclo
-tab = LETTERS.find(l => db.sessions[keyOf(date, l)]) || suggested();
-renderHeader();
-renderList();
+trocarPessoa(PESSOAS[prefs.pessoa] ? prefs.pessoa : "dienert");   // já monta cabeçalho e lista
 renderConfig();
 
 })();

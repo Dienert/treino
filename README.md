@@ -1,10 +1,18 @@
-# Treino Diénert
+# Treino
 
-Registro de treino A/B/C com persistência em `localStorage`. Página única, sem build e sem servidor — feita para abrir no celular na academia.
+Registro de treino com persistência em `localStorage`. Página única, sem build e sem servidor — feita para abrir no celular na academia.
+
+Atende duas pessoas, cada uma com o seu plano e o seu histórico:
+
+| Pessoa | Treinos |
+|---|---|
+| Diénert | A (peito · tríceps), B (costas · bíceps), C (pernas) |
+| Cida | A (quadríceps · glúteos), B (costas · bíceps · abdômen), C (posterior · glúteos), D (peito · ombros · tríceps) |
 
 ## O que faz
 
-- **Treinos A, B e C** já cadastrados, com séries e repetições alvo.
+- **Seletor de pessoa** no topo. Cada uma tem seus treinos, seu histórico, sua sugestão de próximo treino e suas cargas de "última vez" — nada se mistura.
+- **Treinos já cadastrados**, com séries e repetições alvo.
 - **Uma linha por série**: `−` `carga` `+` `✓`, com alvos de 38–58px de largura por 42px de altura. Os `−`/`+` andam de 2,5 em 2,5 kg.
 - **Teclado numérico próprio**: tocar na carga abre uma folha na parte de baixo da tela com teclas grandes e atalhos (−2,5 / +2,5 / +5 / +10). Não existe `<input>` de texto na lista — veja *Por que um teclado próprio* abaixo.
 - **Destaque "agora"** no primeiro exercício incompleto. Ao terminar um exercício ele se recolhe num resumo verde e a tela rola sozinha para o próximo.
@@ -13,7 +21,7 @@ Registro de treino A/B/C com persistência em `localStorage`. Página única, se
 - **Alarme impossível de perder**: tela cheia vermelha piscando, sirene de dois tons e o nome da próxima série. Fecha ao tocar ou sozinho em 15s. Há um botão *Testar* em Ajustes, com diagnóstico do que este aparelho suporta.
 - **Tela acesa** durante o descanso, via Screen Wake Lock.
 - **Histórico** com total de treinos, treinos nos últimos 30 dias, volume acumulado e cada sessão expansível com as cargas.
-- **Sugestão do próximo treino** no ciclo A → B → C, marcada com o selo *próximo* na aba.
+- **Sugestão do próximo treino** no ciclo (A → B → C, ou A → B → C → D para a Cida), marcada com o selo *próximo* na aba.
 - **Backup**: exportar/importar todo o histórico como `.json`.
 - Tema claro/escuro/automático e registro retroativo (basta trocar a data no topo).
 
@@ -31,18 +39,29 @@ Abra o `index.html` no navegador. Não precisa de servidor nem de dependências.
 
 Com o repositório no GitHub, ative em **Settings → Pages → Source: Deploy from a branch → `main` / `/ (root)`**. O site fica em `https://<usuario>.github.io/<repo>/`.
 
-## Editar o plano de treino
+## Editar os planos
 
-Os exercícios ficam na constante `PLAN`, no início do `<script>` do `index.html`:
+Tudo fica na constante `PESSOAS`, no início do `<script>` do `index.html`:
 
 ```js
-{ id:"a2", name:"Supino reto halteres pegada neutra", sets:3, reps:"12" }
+const PESSOAS = {
+  dienert: { nome:"Diénert", planos:{
+    A: { short:"Peito · Tríceps", ex:[
+      { id:"a2", name:"Supino reto halteres pegada neutra", sets:3, reps:"12" },
+      …
 ```
 
-- `id` — identificador estável; é a chave do histórico. **Não mude o `id` de um exercício existente**, senão o histórico dele se perde.
-- `sets` / `reps` — alvo mostrado no card.
+- `id` — identificador estável; é a chave do histórico e precisa ser **único entre todas as pessoas**. **Não mude o `id` de um exercício existente**, senão o histórico dele se perde. Os do Diénert são `a1…c8`, os da Cida `ca1…cd6`.
+- `short` — rótulo da aba. Cabem ~15 caracteres com 3 treinos e ~10 com 4.
+- `sets` / `reps` — alvo mostrado no card. `reps` é texto livre, então faixas como `"10–12"` funcionam (o cálculo de volume usa a ponta de baixo).
 - `unit:"s"` — mede em segundos em vez de kg (ex.: prancha).
-- `bw:true` — exercício de peso corporal; o campo de carga mostra "livre".
+- `bw:true` — exercício de peso corporal; o campo mostra "livre" e some os `−`/`+`.
+
+Adicionar uma terceira pessoa é só acrescentar uma entrada em `PESSOAS`; o seletor no topo e o número de abas se ajustam sozinhos.
+
+### Formato do armazenamento
+
+As sessões são gravadas em `db.sessions`, com chave `data|pessoa|treino`. A versão original do app, de quando só havia um plano, usava `data|treino` — a função `migrar()` converte essas chaves na primeira abertura e marca as sessões antigas como do Diénert, sem perder nada.
 
 O tempo de descanso se muda pela tela **Ajustes**, não no código.
 
