@@ -5,17 +5,19 @@ Registro de treino A/B/C com persistência em `localStorage`. Página única, se
 ## O que faz
 
 - **Treinos A, B e C** já cadastrados, com séries e repetições alvo.
-- **Marcar série por série** e anotar a carga (kg) de cada uma.
-- **Descanso automático de 50s**: ao marcar uma série o cronômetro começa sozinho e dispara um alarme sonoro + vibração no fim. Toque no cronômetro para cancelar.
-- **"Última vez"**: mostra as cargas usadas na última vez que você fez aquele exercício, para saber se dá pra subir.
-- **Sugestão do próximo treino** seguindo o ciclo A → B → C a partir do último treino concluído (ponto azul na aba).
-- **Histórico** com data, séries feitas, cargas e volume acumulado.
+- **Uma linha por série**: campo de carga grande + botão ✓ de 60×42px, feito para ser acertado de primeira com a mão suada.
+- **Destaque "agora"** no primeiro exercício incompleto. Ao terminar um exercício ele se recolhe num resumo verde e a tela rola sozinha para o próximo.
+- **Carga herdada**: ao marcar uma série, a carga da anterior é preenchida sozinha. O botão *"↺ Repetir as cargas da última vez"* preenche o exercício inteiro com o que você fez da última vez.
+- **Descanso automático** (50s por padrão, ajustável em Ajustes): começa ao marcar uma série, com barra fixa mostrando a contagem, `Pular` e `+15s`.
+- **Alarme impossível de perder**: tela cheia vermelha piscando, sirene de dois tons por ~6s, vibração repetida e o nome da próxima série. Fecha ao tocar ou sozinho em 15s. Há um botão *Testar* em Ajustes.
+- **Histórico** com total de treinos, treinos nos últimos 30 dias, volume acumulado e cada sessão expansível com as cargas.
+- **Sugestão do próximo treino** no ciclo A → B → C, marcada com o selo *próximo* na aba.
 - **Backup**: exportar/importar todo o histórico como `.json`.
-- Tema claro/escuro e registro retroativo (basta trocar a data).
+- Tema claro/escuro/automático e registro retroativo (basta trocar a data no topo).
 
 ## Onde os dados ficam
 
-Tudo fica no `localStorage` do navegador, na chave `treino-dienert:v1`. Nada é enviado para nenhum servidor.
+Tudo fica no `localStorage` do navegador: os treinos na chave `treino-dienert:v1` e as preferências (descanso, tema) em `treino-dienert:prefs`. Nada é enviado para nenhum servidor.
 
 Consequência prática: os dados são **por navegador e por dispositivo**. Trocou de celular ou limpou os dados do site, o histórico vai junto — use *Exportar backup* de vez em quando.
 
@@ -38,6 +40,12 @@ Os exercícios ficam na constante `PLAN`, no início do `<script>` do `index.htm
 - `id` — identificador estável; é a chave do histórico. **Não mude o `id` de um exercício existente**, senão o histórico dele se perde.
 - `sets` / `reps` — alvo mostrado no card.
 - `unit:"s"` — mede em segundos em vez de kg (ex.: prancha).
-- `bw:true` — exercício de peso corporal; o campo de carga vira opcional.
+- `bw:true` — exercício de peso corporal; o campo de carga mostra "livre".
 
-Para mudar o tempo de descanso, ajuste `REST_SECONDS`.
+O tempo de descanso se muda pela tela **Ajustes**, não no código.
+
+## Sobre o alarme
+
+O áudio só é liberado depois do primeiro toque na página — regra de autoplay do iOS/Android. Na prática ele já está pronto quando você marca a primeira série.
+
+Os bipes são agendados dentro do `AudioContext` (`osc.start(t)` com `t` no futuro), e não por `setTimeout`. Isso importa porque navegadores estrangulam timers de JS em segundo plano, mas a agenda do Web Audio continua no horário certo. Ainda assim, o iOS *suspende* o `AudioContext` quando a tela é bloqueada — com a tela apagada o alarme é melhor-esforço, e a vibração cobre parte disso. Deixe a tela ligada durante o descanso.
