@@ -5,11 +5,12 @@ Registro de treino A/B/C com persistência em `localStorage`. Página única, se
 ## O que faz
 
 - **Treinos A, B e C** já cadastrados, com séries e repetições alvo.
-- **Uma linha por série**: campo de carga grande + botão ✓ de 60×42px, feito para ser acertado de primeira com a mão suada.
+- **Uma linha por série**: `−` `carga` `+` `✓`, com alvos de 38–58px de largura por 42px de altura. Os botões `−`/`+` (passo de 2,5kg) existem para você quase nunca precisar abrir o teclado.
 - **Destaque "agora"** no primeiro exercício incompleto. Ao terminar um exercício ele se recolhe num resumo verde e a tela rola sozinha para o próximo.
 - **Carga herdada**: ao marcar uma série, a carga da anterior é preenchida sozinha. O botão *"↺ Repetir as cargas da última vez"* preenche o exercício inteiro com o que você fez da última vez.
 - **Descanso automático** (50s por padrão, ajustável em Ajustes): começa ao marcar uma série, com barra fixa mostrando a contagem, `Pular` e `+15s`.
-- **Alarme impossível de perder**: tela cheia vermelha piscando, sirene de dois tons por ~6s, vibração repetida e o nome da próxima série. Fecha ao tocar ou sozinho em 15s. Há um botão *Testar* em Ajustes.
+- **Alarme impossível de perder**: tela cheia vermelha piscando, sirene de dois tons e o nome da próxima série. Fecha ao tocar ou sozinho em 15s. Há um botão *Testar* em Ajustes, com diagnóstico do que este aparelho suporta.
+- **Tela acesa** durante o descanso, via Screen Wake Lock.
 - **Histórico** com total de treinos, treinos nos últimos 30 dias, volume acumulado e cada sessão expansível com as cargas.
 - **Sugestão do próximo treino** no ciclo A → B → C, marcada com o selo *próximo* na aba.
 - **Backup**: exportar/importar todo o histórico como `.json`.
@@ -44,8 +45,21 @@ Os exercícios ficam na constante `PLAN`, no início do `<script>` do `index.htm
 
 O tempo de descanso se muda pela tela **Ajustes**, não no código.
 
-## Sobre o alarme
+## Sobre o alarme (e o iPhone)
 
-O áudio só é liberado depois do primeiro toque na página — regra de autoplay do iOS/Android. Na prática ele já está pronto quando você marca a primeira série.
+O alarme tem dois caminhos de som, de propósito:
 
-Os bipes são agendados dentro do `AudioContext` (`osc.start(t)` com `t` no futuro), e não por `setTimeout`. Isso importa porque navegadores estrangulam timers de JS em segundo plano, mas a agenda do Web Audio continua no horário certo. Ainda assim, o iOS *suspende* o `AudioContext` quando a tela é bloqueada — com a tela apagada o alarme é melhor-esforço, e a vibração cobre parte disso. Deixe a tela ligada durante o descanso.
+1. **Um elemento `<audio>`** tocando um WAV de sirene gerado em tempo de execução (`makeAlarmClip`). É o caminho principal, porque **a chave lateral do iPhone no silencioso silencia o Web Audio no Safari, mas não silencia um `<audio>`**. O app também declara `navigator.audioSession.type = "playback"` quando disponível.
+2. **Osciladores do Web Audio** agendados com antecedência (`osc.start(t)` com `t` no futuro) para a contagem 3-2-1 e o alarme. Como a agenda vive dentro do `AudioContext` e não em `setTimeout`, ela sobrevive ao estrangulamento de timers de JS quando o navegador vai para segundo plano.
+
+Ambos só destravam dentro de um gesto do usuário. O clipe começa com 0,15s de silêncio justamente para o destravamento (`play()` seguido de `pause()` imediato) não deixar escapar nenhum ruído.
+
+**O volume do alarme é o volume de mídia do aparelho** — se estiver baixo, o alarme fica baixo, mesmo com o toque alto.
+
+### Vibração: não existe no iPhone
+
+O Safari no iOS não implementa a Vibration API. Nenhuma página web consegue vibrar um iPhone — não é limitação deste app. A tela **Ajustes** mostra o que o seu aparelho de fato suporta. Em Android o app vibra normalmente.
+
+### Tela bloqueada
+
+Durante o descanso o app pede um Screen Wake Lock para a tela não apagar. Se você bloquear a tela na mão, o iOS suspende o áudio e o alarme é melhor-esforço.
