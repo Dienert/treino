@@ -1,0 +1,57 @@
+# Fonte de verdade alternativa do projeto Xcode (XcodeGen).
+# O `Treino.xcodeproj` já vem pronto no repositório; use este arquivo só se
+# precisar regenerá-lo do zero:
+#
+#   brew install xcodegen
+#   cd ios && xcodegen generate
+#
+# Depois é só abrir o Treino.xcodeproj e ajustar Team/App Group (veja o README).
+name: Treino
+options:
+  bundleIdPrefix: com.dienert
+  deploymentTarget:
+    iOS: "16.1"
+  developmentLanguage: pt-BR
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""   # preencha com o seu Team no Xcode
+
+targets:
+  Treino:
+    type: application
+    platform: iOS
+    sources:
+      - path: Treino
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Treino/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.dienert.treino
+        CODE_SIGN_ENTITLEMENTS: Treino/Treino.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - target: TreinoWidget
+        embed: true
+
+  TreinoWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: TreinoWidget
+      # arquivo compartilhado entre os dois alvos
+      - path: Treino/LiveActivity/RestAttributes.swift
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: TreinoWidget/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.dienert.treino.TreinoWidget
+        CODE_SIGN_ENTITLEMENTS: TreinoWidget/TreinoWidget.entitlements
+        SKIP_INSTALL: YES

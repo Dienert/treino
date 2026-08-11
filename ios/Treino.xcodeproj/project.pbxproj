@@ -1,0 +1,557 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000000022 /* TreinoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000023 /* TreinoApp.swift */; };
+		000000000000000000000024 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000025 /* AppConfig.swift */; };
+		000000000000000000000026 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000027 /* Models.swift */; };
+		000000000000000000000028 /* Plans.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000029 /* Plans.swift */; };
+		00000000000000000000002A /* DateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000002B /* DateUtils.swift */; };
+		00000000000000000000002C /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000002D /* Store.swift */; };
+		00000000000000000000002E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000002F /* Theme.swift */; };
+		000000000000000000000030 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000031 /* AudioManager.swift */; };
+		000000000000000000000032 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000033 /* NotificationManager.swift */; };
+		000000000000000000000034 /* RestController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000035 /* RestController.swift */; };
+		000000000000000000000036 /* LiveActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000037 /* LiveActivityController.swift */; };
+		000000000000000000000038 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000039 /* ContentView.swift */; };
+		00000000000000000000003A /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000003B /* HeaderView.swift */; };
+		00000000000000000000003C /* TreinoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000003D /* TreinoView.swift */; };
+		00000000000000000000003E /* ExerciseCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000003F /* ExerciseCardView.swift */; };
+		000000000000000000000040 /* NumPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000041 /* NumPadView.swift */; };
+		000000000000000000000042 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000043 /* FlowLayout.swift */; };
+		000000000000000000000044 /* RestBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000045 /* RestBarView.swift */; };
+		000000000000000000000046 /* AlarmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000047 /* AlarmView.swift */; };
+		000000000000000000000048 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000049 /* HistoryView.swift */; };
+		00000000000000000000004A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000004B /* SettingsView.swift */; };
+		00000000000000000000004C /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000004D /* Toast.swift */; };
+		00000000000000000000004E /* RestAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000004F /* RestAttributes.swift */; };
+		000000000000000000000050 /* RestAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000004F /* RestAttributes.swift */; };
+		000000000000000000000051 /* TreinoWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000052 /* TreinoWidgetBundle.swift */; };
+		000000000000000000000053 /* RestLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000054 /* RestLiveActivity.swift */; };
+		000000000000000000000055 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000056 /* Assets.xcassets */; };
+		000000000000000000000021 /* TreinoWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 000000000000000000000002 /* TreinoWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		000000000000000000000017 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000003 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 00000000000000000000000E;
+			remoteInfo = TreinoWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		000000000000000000000012 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				000000000000000000000021 /* TreinoWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000023 /* TreinoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TreinoApp.swift"; sourceTree = "<group>"; };
+		000000000000000000000025 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppConfig.swift"; sourceTree = "<group>"; };
+		000000000000000000000027 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models.swift"; sourceTree = "<group>"; };
+		000000000000000000000029 /* Plans.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Plans.swift"; sourceTree = "<group>"; };
+		00000000000000000000002B /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateUtils.swift"; sourceTree = "<group>"; };
+		00000000000000000000002D /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Store.swift"; sourceTree = "<group>"; };
+		00000000000000000000002F /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme.swift"; sourceTree = "<group>"; };
+		000000000000000000000031 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioManager.swift"; sourceTree = "<group>"; };
+		000000000000000000000033 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationManager.swift"; sourceTree = "<group>"; };
+		000000000000000000000035 /* RestController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RestController.swift"; sourceTree = "<group>"; };
+		000000000000000000000037 /* LiveActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LiveActivityController.swift"; sourceTree = "<group>"; };
+		000000000000000000000039 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView.swift"; sourceTree = "<group>"; };
+		00000000000000000000003B /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HeaderView.swift"; sourceTree = "<group>"; };
+		00000000000000000000003D /* TreinoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TreinoView.swift"; sourceTree = "<group>"; };
+		00000000000000000000003F /* ExerciseCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExerciseCardView.swift"; sourceTree = "<group>"; };
+		000000000000000000000041 /* NumPadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumPadView.swift"; sourceTree = "<group>"; };
+		000000000000000000000043 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlowLayout.swift"; sourceTree = "<group>"; };
+		000000000000000000000045 /* RestBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RestBarView.swift"; sourceTree = "<group>"; };
+		000000000000000000000047 /* AlarmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AlarmView.swift"; sourceTree = "<group>"; };
+		000000000000000000000049 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HistoryView.swift"; sourceTree = "<group>"; };
+		00000000000000000000004B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView.swift"; sourceTree = "<group>"; };
+		00000000000000000000004D /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Toast.swift"; sourceTree = "<group>"; };
+		00000000000000000000004F /* RestAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RestAttributes.swift"; sourceTree = "<group>"; };
+		000000000000000000000052 /* TreinoWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TreinoWidgetBundle.swift"; sourceTree = "<group>"; };
+		000000000000000000000054 /* RestLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RestLiveActivity.swift"; sourceTree = "<group>"; };
+		000000000000000000000056 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets.xcassets"; sourceTree = "<group>"; };
+		000000000000000000000057 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info.plist"; sourceTree = "<group>"; };
+		000000000000000000000058 /* Treino.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Treino.entitlements"; sourceTree = "<group>"; };
+		000000000000000000000059 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info.plist"; sourceTree = "<group>"; };
+		00000000000000000000005A /* TreinoWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TreinoWidget.entitlements"; sourceTree = "<group>"; };
+		000000000000000000000001 /* Treino.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Treino.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000002 /* TreinoWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "TreinoWidget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000014 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000004 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000006 /* Treino */,
+				000000000000000000000007 /* TreinoWidget */,
+				000000000000000000000005 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000001 /* Treino.app */,
+				000000000000000000000002 /* TreinoWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		000000000000000000000006 /* Treino */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000023 /* TreinoApp.swift */,
+				000000000000000000000025 /* AppConfig.swift */,
+				000000000000000000000008 /* Models */,
+				000000000000000000000009 /* Theme */,
+				00000000000000000000000A /* Audio */,
+				00000000000000000000000B /* LiveActivity */,
+				00000000000000000000000C /* Views */,
+				000000000000000000000056 /* Assets.xcassets */,
+				000000000000000000000057 /* Info.plist */,
+				000000000000000000000058 /* Treino.entitlements */,
+			);
+			path = Treino;
+			sourceTree = "<group>";
+		};
+		000000000000000000000008 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000027 /* Models.swift */,
+				000000000000000000000029 /* Plans.swift */,
+				00000000000000000000002B /* DateUtils.swift */,
+				00000000000000000000002D /* Store.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		000000000000000000000009 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000002F /* Theme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000A /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000031 /* AudioManager.swift */,
+				000000000000000000000033 /* NotificationManager.swift */,
+				000000000000000000000035 /* RestController.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000B /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000004F /* RestAttributes.swift */,
+				000000000000000000000037 /* LiveActivityController.swift */,
+			);
+			path = LiveActivity;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000039 /* ContentView.swift */,
+				00000000000000000000003B /* HeaderView.swift */,
+				00000000000000000000003D /* TreinoView.swift */,
+				00000000000000000000003F /* ExerciseCardView.swift */,
+				000000000000000000000041 /* NumPadView.swift */,
+				000000000000000000000043 /* FlowLayout.swift */,
+				000000000000000000000045 /* RestBarView.swift */,
+				000000000000000000000047 /* AlarmView.swift */,
+				000000000000000000000049 /* HistoryView.swift */,
+				00000000000000000000004B /* SettingsView.swift */,
+				00000000000000000000004D /* Toast.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		000000000000000000000007 /* TreinoWidget */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000052 /* TreinoWidgetBundle.swift */,
+				000000000000000000000054 /* RestLiveActivity.swift */,
+				000000000000000000000059 /* Info.plist */,
+				00000000000000000000005A /* TreinoWidget.entitlements */,
+			);
+			path = TreinoWidget;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		00000000000000000000000D /* Treino */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000018 /* Build configuration list for PBXNativeTarget "Treino" */;
+			buildPhases = (
+				00000000000000000000000F /* Sources */,
+				000000000000000000000010 /* Frameworks */,
+				000000000000000000000011 /* Resources */,
+				000000000000000000000012 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				000000000000000000000016 /* PBXTargetDependency */,
+			);
+			name = Treino;
+			productName = Treino;
+			productReference = 000000000000000000000001 /* Treino.app */;
+			productType = "com.apple.product-type.application";
+		};
+		00000000000000000000000E /* TreinoWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000019 /* Build configuration list for PBXNativeTarget "TreinoWidget" */;
+			buildPhases = (
+				000000000000000000000013 /* Sources */,
+				000000000000000000000014 /* Frameworks */,
+				000000000000000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TreinoWidget;
+			productName = TreinoWidget;
+			productReference = 000000000000000000000002 /* TreinoWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000003 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					00000000000000000000000D = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					00000000000000000000000E = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 00000000000000000000001A /* Build configuration list for PBXProject "Treino" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "pt-BR";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				"pt-BR",
+				Base,
+			);
+			mainGroup = 000000000000000000000004;
+			productRefGroup = 000000000000000000000005 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				00000000000000000000000D /* Treino */,
+				00000000000000000000000E /* TreinoWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000055 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		00000000000000000000000F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000022 /* TreinoApp.swift in Sources */,
+				000000000000000000000024 /* AppConfig.swift in Sources */,
+				000000000000000000000026 /* Models.swift in Sources */,
+				000000000000000000000028 /* Plans.swift in Sources */,
+				00000000000000000000002A /* DateUtils.swift in Sources */,
+				00000000000000000000002C /* Store.swift in Sources */,
+				00000000000000000000002E /* Theme.swift in Sources */,
+				000000000000000000000030 /* AudioManager.swift in Sources */,
+				000000000000000000000032 /* NotificationManager.swift in Sources */,
+				000000000000000000000034 /* RestController.swift in Sources */,
+				000000000000000000000036 /* LiveActivityController.swift in Sources */,
+				000000000000000000000038 /* ContentView.swift in Sources */,
+				00000000000000000000003A /* HeaderView.swift in Sources */,
+				00000000000000000000003C /* TreinoView.swift in Sources */,
+				00000000000000000000003E /* ExerciseCardView.swift in Sources */,
+				000000000000000000000040 /* NumPadView.swift in Sources */,
+				000000000000000000000042 /* FlowLayout.swift in Sources */,
+				000000000000000000000044 /* RestBarView.swift in Sources */,
+				000000000000000000000046 /* AlarmView.swift in Sources */,
+				000000000000000000000048 /* HistoryView.swift in Sources */,
+				00000000000000000000004A /* SettingsView.swift in Sources */,
+				00000000000000000000004C /* Toast.swift in Sources */,
+				00000000000000000000004E /* RestAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000013 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000051 /* TreinoWidgetBundle.swift in Sources */,
+				000000000000000000000053 /* RestLiveActivity.swift in Sources */,
+				000000000000000000000050 /* RestAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		000000000000000000000016 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 00000000000000000000000E /* TreinoWidget */;
+			targetProxy = 000000000000000000000017 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00000000000000000000001F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		000000000000000000000020 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		00000000000000000000001B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Treino/Treino.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Treino/Info.plist;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dienert.treino;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		00000000000000000000001C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Treino/Treino.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Treino/Info.plist;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dienert.treino;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		00000000000000000000001D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TreinoWidget/TreinoWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TreinoWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Treino;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dienert.treino.TreinoWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		00000000000000000000001E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TreinoWidget/TreinoWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TreinoWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Treino;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dienert.treino.TreinoWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00000000000000000000001A /* Build configuration list for PBXProject "Treino" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000001F /* Debug */,
+				000000000000000000000020 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000018 /* Build configuration list for PBXNativeTarget "Treino" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000001B /* Debug */,
+				00000000000000000000001C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000019 /* Build configuration list for PBXNativeTarget "TreinoWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000001D /* Debug */,
+				00000000000000000000001E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000003 /* Project object */;
+}

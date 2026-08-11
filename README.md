@@ -2,6 +2,8 @@
 
 Registro de treino com persistência em `localStorage`. Página única, sem build e sem servidor — feita para abrir no celular na academia.
 
+> **App nativo iOS:** existe também uma porta em **SwiftUI** em [`ios/`](ios/README.md) — mesma lógica, mais o que a web não alcança: sirene por cima do Spotify (`.duckOthers`), alarme com a tela bloqueada (notificação `.timeSensitive`), Live Activity na Dynamic Island e haptics. Veja [`ios/README.md`](ios/README.md) para abrir no Xcode.
+
 Atende duas pessoas, cada uma com o seu plano e o seu histórico:
 
 | Pessoa | Treinos |
