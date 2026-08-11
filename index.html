@@ -386,6 +386,9 @@
     <div class="line">
       <div class="lab">Som<small id="diagSom">…</small></div>
     </div>
+    <div class="line">
+      <div class="lab">Último teste<small id="diagLaudo">aperte Testar acima</small></div>
+    </div>
   </div>
 
   <h2 class="sec">Com música tocando</h2>
@@ -451,6 +454,8 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<audio id="alarmAudio" preload="auto" playsinline loop></audio>
 
 <div class="backdrop" id="padBack"></div>
 <div class="sheet" id="pad" role="dialog" aria-label="Digitar carga">
@@ -1067,7 +1072,7 @@ const MODOS_AUDIO = {
   "transient":      { rot:"Só abaixar",       desc:"A música continua mais baixa — pode deixar o alarme fraco" },
   "playback":       { rot:"Alarme acima de tudo", desc:"Sempre toca, mas a música para e não volta" },
 };
-let alarmEl = null, audioArmed = false;
+let alarmEl = null, audioArmed = false, alarmTocando = false, alarmIniciou = false;
 
 /** Declara a sessão de áudio no modo escolhido. Precisa ser feito ANTES
  *  do play(): o iOS aplica a categoria quando a reprodução começa. */
@@ -1105,7 +1110,16 @@ function makeAlarmClip(){
   dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
   tag(36,"data"); dv.setUint32(40, pcm.length*2, true);
   new Int16Array(buf, 44).set(pcm);
-  return URL.createObjectURL(new Blob([buf], { type:"audio/wav" }));
+
+  // data: URL, e NÃO blob:. O Safari do iOS exige suporte a requisições
+  // parciais (byte-range) para reproduzir mídia, coisa que uma blob URL
+  // não oferece — o <audio> toma a sessão de áudio, pausa o Spotify e
+  // não emite som nenhum. Com data: ele decodifica direto.
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000)
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return "data:audio/wav;base64," + btoa(bin);
 }
 
 function unlockAudio(){
@@ -1114,21 +1128,30 @@ function unlockAudio(){
   aplicarSessao("ambient");
 
   if (!alarmEl) {
-    alarmEl = new Audio(makeAlarmClip());
-    alarmEl.loop = true;
-    alarmEl.preload = "auto";
-    alarmEl.setAttribute("playsinline", "");
+    // elemento de verdade no DOM, não `new Audio()`: o iOS trata melhor
+    alarmEl = $("alarmAudio");
+    alarmEl.src = makeAlarmClip();
+    alarmEl.load();
+    // 'playing' é a prova de que a reprodução começou de verdade, mesmo
+    // quando o relógio do elemento não anda
+    alarmEl.addEventListener("playing", () => { alarmIniciou = true; });
   }
   // "esquenta" o elemento dentro do gesto — sem isso o play() lá no fim do
   // descanso é recusado pela política de autoplay. O iOS ignora `volume`,
   // então quem garante o silêncio é o trecho mudo no começo do clipe.
   if (!audioArmed) {
+    const desligar = () => {
+      audioArmed = true;
+      // NÃO pausar se o alarme já começou nesse meio tempo: a promessa do
+      // play() de aquecimento resolve depois, e pausar aqui matava o alarme
+      // recém-iniciado — a sessão de áudio era tomada (o Spotify parava) e
+      // nenhum som saía.
+      if (!alarmTocando) { alarmEl.pause(); try { alarmEl.currentTime = 0; } catch (e) {} }
+      renderDiag();
+    };
     const p = alarmEl.play();
-    if (p && p.then) p.then(() => {
-      alarmEl.pause(); alarmEl.currentTime = 0;
-      audioArmed = true; renderDiag();
-    }).catch(() => {});
-    else { alarmEl.pause(); alarmEl.currentTime = 0; audioArmed = true; }
+    if (p && p.then) p.then(desligar).catch(() => {});
+    else desligar();
   }
 }
 document.addEventListener("pointerdown", unlockAudio, { passive:true });
@@ -1136,6 +1159,7 @@ document.addEventListener("pointerdown", unlockAudio, { passive:true });
 let alarmStop = null;
 function playAlarmNow(){
   if (!alarmEl) return;
+  alarmTocando = true;                 // trava o aquecimento de pausar isto
   aplicarSessao(prefs.audio);          // só agora tomamos a sessão
   try {
     alarmEl.currentTime = 0;
@@ -1152,6 +1176,7 @@ function playAlarmNow(){
 }
 function stopAlarmSound(){
   clearTimeout(alarmStop);
+  alarmTocando = false;
   if (!alarmEl) return;
   alarmEl.pause();
   try { alarmEl.currentTime = 0; } catch (e) {}
@@ -1395,11 +1420,32 @@ function applyTheme(){
   if (prefs.theme === "auto") document.documentElement.removeAttribute("data-theme");
   else document.documentElement.setAttribute("data-theme", prefs.theme);
 }
+let laudo = "";
 $("btnTestAlarm").addEventListener("click", () => {
   unlockAudio();
   restLabel = "É só um teste";
   restEnd = Date.now();
+  laudo = "testando…"; alarmIniciou = false; renderDiag();
   setTimeout(fireAlarm, 120);   // dá tempo do unlock resolver antes do play()
+
+  // 1,6s depois, relata o que o aparelho REALMENTE fez. Se o tempo não
+  // andou, o som não saiu — não adianta trocar de modo de áudio.
+  setTimeout(() => {
+    const e = alarmEl;
+    if (!e) { laudo = "o elemento de áudio nem foi criado"; }
+    else {
+      const andou = e.currentTime > 0.05;
+      const ERROS = { 1:"abortado", 2:"rede", 3:"não consegui decodificar", 4:"formato não suportado" };
+      laudo = (andou ? `tocou ✓ ${e.currentTime.toFixed(1)}s`
+                     : alarmIniciou ? "iniciou mas o tempo não andou"
+                     : "NÃO iniciou")
+        + ` · ${e.paused ? "PAUSADO" : "rodando"}`
+        + ` · carregado: ${["nada","metadados","dados","futuro","completo"][e.readyState] || e.readyState}`
+        + (e.error ? ` · erro: ${ERROS[e.error.code] || e.error.code}` : "")
+        + ` · modo: ${prefs.audio}`;
+    }
+    renderDiag();
+  }, 1600);
 });
 
 /** Mostra, em Ajustes, o que este aparelho de fato suporta. */
@@ -1421,6 +1467,8 @@ function renderDiag(){
       : wakeLock ? "ativa agora ✓" : "será ligada no descanso",
     !!wakeLock);
   pinta(vib, navigator.vibrate ? "suportada ✓" : "não existe no iPhone", !!navigator.vibrate);
+  const l = $("diagLaudo");
+  if (l && laudo) pinta(l, laudo, laudo.includes("tocou ✓"));
 }
 $("btnClearDay").addEventListener("click", () => {
   const k = keyOf(date, pessoa, tab);
