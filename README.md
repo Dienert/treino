@@ -77,13 +77,19 @@ O único `<input>` que sobrou é o seletor de data no topo, que abre um seletor 
 
 O alarme é **um elemento `<audio>`** tocando um WAV de sirene gerado em tempo de execução (`makeAlarmClip`), destravado no primeiro toque na tela. O clipe começa com 0,15s de silêncio de propósito: o destravamento faz `play()` seguido de `pause()` imediato, e assim não escapa ruído nenhum.
 
-**Não há Web Audio aqui, e isso é deliberado.** No iOS, só instanciar um `AudioContext` já toma a sessão de áudio e **para** o que estiver tocando no Spotify. Um `<audio>` com a sessão declarada como `transient` apenas abaixa o volume do outro app durante o alarme.
+**Não há Web Audio aqui, e isso é deliberado.** No iOS, só instanciar um `AudioContext` já toma a sessão de áudio e **para** o que estiver tocando no Spotify.
 
-```js
-navigator.audioSession.type = "transient";
-```
+### Convivendo com o Spotify
 
-Os tipos importam: `playback` interrompe o outro app; `transient` abaixa e devolve. Ambos atravessam a chave lateral no silencioso.
+Quem decide isso é `navigator.audioSession.type`, e o comportamento real de cada modo varia com a versão do iOS — por isso é **escolha do usuário**, em *Ajustes → Com música tocando*:
+
+| Modo | `type` | O que acontece |
+|---|---|---|
+| Pausar e retomar *(padrão)* | `transient-solo` | O alarme toca e a música volta sozinha depois |
+| Só abaixar | `transient` | A música continua mais baixa — na prática o alarme costuma ficar inaudível por baixo dela |
+| Alarme acima de tudo | `playback` | Sempre toca; a música para e não volta |
+
+Fora do alarme a sessão fica em `ambient`, que não toma o áudio de ninguém. O tipo é declarado **imediatamente antes do `play()`** (o iOS aplica a categoria quando a reprodução começa) e devolvido para `ambient` quando o alarme para. Se o `play()` for recusado no modo escolhido, há um fallback automático para `playback`.
 
 **O volume do alarme é o volume de mídia do aparelho** — se estiver baixo, o alarme fica baixo, mesmo com o toque alto.
 

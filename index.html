@@ -386,6 +386,17 @@
     <div class="line">
       <div class="lab">Som<small id="diagSom">…</small></div>
     </div>
+  </div>
+
+  <h2 class="sec">Com música tocando</h2>
+  <div class="group">
+    <div class="line" style="display:block">
+      <div class="lab" style="margin-bottom:9px">Quando o alarme tocar<small id="audioDesc">…</small></div>
+      <div class="chips" id="audioChips"></div>
+    </div>
+    <div class="line">
+      <div class="lab">Controle de sessão de áudio<small id="diagSess">…</small></div>
+    </div>
     <div class="line">
       <div class="lab">Tela acesa no descanso<small id="diagWake">…</small></div>
     </div>
@@ -393,8 +404,9 @@
       <div class="lab">Vibração<small id="diagVib">…</small></div>
     </div>
   </div>
-  <p class="tip"><b>Com a tela bloqueada o alarme não toca.</b> O iOS congela a página e nenhum site consegue tocar som ou avisar de fora dele. Por isso o app segura a tela acesa durante o descanso — deixe o celular destravado. Se você bloquear na mão, o alarme dispara assim que voltar ao app.<br><br>
-  O som passa mesmo com a chave lateral no silencioso e não para o que estiver tocando no Spotify, só abaixa. Ele usa o <b>volume de mídia</b>.<br><br>
+  <p class="tip">Teste com a música tocando: aperte <b>Testar</b> acima com o Spotify ligado e veja qual modo funciona no seu aparelho.<br><br>
+  <b>Com a tela bloqueada o alarme não toca.</b> O iOS congela a página e nenhum site consegue tocar som ou avisar de fora dele. Por isso o app segura a tela acesa durante o descanso — deixe o celular destravado. Se você bloquear na mão, o alarme dispara assim que voltar ao app.<br><br>
+  O som atravessa a chave lateral no silencioso e usa o <b>volume de mídia</b>.<br><br>
   No iPhone, nenhuma página web consegue vibrar o aparelho.</p>
 
   <h2 class="sec">Aparência</h2>
@@ -552,7 +564,7 @@ const KEY = "treino-dienert:v1";        // mesmo formato da v1 — histórico an
 const PREF = "treino-dienert:prefs";
 
 let db = { sessions: {} };
-let prefs = { rest: 50, theme: "auto", pessoa: "dienert" };
+let prefs = { rest: 50, theme: "auto", pessoa: "dienert", audio: "transient-solo" };
 let tab = "A", date = todayISO(), view = "treino";
 let saveTimer = null;
 
@@ -1036,15 +1048,39 @@ const elBar = $("restBar"), elTime = $("rbTime"), elFill = $("rbFill"), elAlarm 
 
    O alarme é um elemento <audio> tocando um WAV gerado aqui mesmo. Não
    usamos Web Audio: só instanciar um AudioContext no iOS já toma a sessão
-   de áudio e PARA o que estiver tocando (Spotify, podcast). O <audio>
-   também tem a vantagem de atravessar a chave lateral no silencioso.
+   de áudio e PARA o que estiver tocando. O <audio> também atravessa a
+   chave lateral no silencioso.
 
-   navigator.audioSession.type = "transient" é o que impede a interrupção:
-   "transient" abaixa momentaneamente o volume do outro app em vez de
-   pará-lo, e ainda assim ignora o modo silencioso. ("playback", que
-   estava aqui antes, é justamente o que interrompe.)
+   navigator.audioSession.type decide como conviver com o Spotify. Os três
+   modos se comportam de forma bem diferente na prática:
+
+     transient-solo  pausa o outro app e ele VOLTA SOZINHO no fim  (padrão)
+     transient       era para só abaixar o volume do outro app, mas na
+                     prática o alarme costuma ficar inaudível por baixo
+     playback        o alarme sempre toca, o outro app para e não volta
+
+   É escolha do usuário, em Ajustes, porque o comportamento real varia
+   com a versão do iOS.
    ------------------------------------------------------------------ */
+const MODOS_AUDIO = {
+  "transient-solo": { rot:"Pausar e retomar", desc:"O alarme toca e a música volta sozinha depois" },
+  "transient":      { rot:"Só abaixar",       desc:"A música continua mais baixa — pode deixar o alarme fraco" },
+  "playback":       { rot:"Alarme acima de tudo", desc:"Sempre toca, mas a música para e não volta" },
+};
 let alarmEl = null, audioArmed = false;
+
+/** Declara a sessão de áudio no modo escolhido. Precisa ser feito ANTES
+ *  do play(): o iOS aplica a categoria quando a reprodução começa. */
+function aplicarSessao(tipo){
+  try {
+    if (!navigator.audioSession) return false;
+    navigator.audioSession.type = tipo || prefs.audio || "transient-solo";
+    return true;
+  } catch (e) { return false; }
+}
+const sessaoSuportada = () => {
+  try { return !!navigator.audioSession; } catch (e) { return false; }
+};
 
 /** Renderiza a sirene de dois tons num WAV e devolve um blob URL.
  *  Começa com 0,15s de silêncio de propósito: o destravamento faz
@@ -1073,8 +1109,9 @@ function makeAlarmClip(){
 }
 
 function unlockAudio(){
-  // "transient": abaixa o áudio do outro app em vez de interrompê-lo
-  try { if (navigator.audioSession) navigator.audioSession.type = "transient"; } catch (e) {}
+  // enquanto não é hora do alarme, ficamos em "ambient": mistura com o
+  // outro app e não toma a sessão de ninguém
+  aplicarSessao("ambient");
 
   if (!alarmEl) {
     alarmEl = new Audio(makeAlarmClip());
@@ -1099,10 +1136,16 @@ document.addEventListener("pointerdown", unlockAudio, { passive:true });
 let alarmStop = null;
 function playAlarmNow(){
   if (!alarmEl) return;
+  aplicarSessao(prefs.audio);          // só agora tomamos a sessão
   try {
     alarmEl.currentTime = 0;
     alarmEl.volume = 1;
-    alarmEl.play().catch(() => {});
+    const p = alarmEl.play();
+    // se o modo escolhido for recusado, cai para o que sempre toca
+    if (p && p.catch) p.catch(() => {
+      aplicarSessao("playback");
+      try { alarmEl.play().catch(() => {}); } catch (e) {}
+    });
   } catch (e) {}
   clearTimeout(alarmStop);
   alarmStop = setTimeout(stopAlarmSound, 12000);
@@ -1112,6 +1155,7 @@ function stopAlarmSound(){
   if (!alarmEl) return;
   alarmEl.pause();
   try { alarmEl.currentTime = 0; } catch (e) {}
+  aplicarSessao("ambient");            // devolve a sessão para o outro app
 }
 
 /* -- manter a tela acesa durante o descanso.
@@ -1325,8 +1369,17 @@ function renderConfig(){
     `<button class="chip" data-rest="${v}" aria-pressed="${v===prefs.rest}">${v}s</button>`).join("");
   document.querySelectorAll("#themeChips .chip").forEach(c =>
     c.setAttribute("aria-pressed", String(c.dataset.theme === prefs.theme)));
+  $("audioChips").innerHTML = Object.entries(MODOS_AUDIO).map(([k, m]) =>
+    `<button class="chip" data-audio="${k}" aria-pressed="${k===prefs.audio}">${esc(m.rot)}</button>`).join("");
+  $("audioDesc").textContent = (MODOS_AUDIO[prefs.audio] || MODOS_AUDIO["transient-solo"]).desc;
   renderDiag();
 }
+$("audioChips").addEventListener("click", e => {
+  const c = e.target.closest(".chip");
+  if (!c) return;
+  prefs.audio = c.dataset.audio; savePrefs(); renderConfig();
+  toast("Toque em Testar com a música tocando");
+});
 $("restChips").addEventListener("click", e => {
   const c = e.target.closest(".chip");
   if (!c) return;
@@ -1358,6 +1411,11 @@ function renderDiag(){
     el.style.color = bom ? "var(--done)" : "var(--muted)";
   };
   pinta(som, audioArmed ? "pronto ✓" : "toque na tela para liberar", audioArmed);
+  const sess = $("diagSess");
+  if (sess) pinta(sess,
+    sessaoSuportada() ? "suportado ✓ — os modos acima funcionam"
+                      : "não suportado neste navegador — o alarme pode ficar por baixo da música",
+    sessaoSuportada());
   pinta(wake,
     !("wakeLock" in navigator) ? "não suportada neste navegador"
       : wakeLock ? "ativa agora ✓" : "será ligada no descanso",
