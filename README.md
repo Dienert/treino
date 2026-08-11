@@ -81,13 +81,17 @@ O alarme é **um elemento `<audio>`** tocando um WAV de sirene gerado em tempo d
 
 ### Convivendo com o Spotify
 
-Quem decide isso é `navigator.audioSession.type`, e o comportamento real de cada modo varia com a versão do iOS — por isso é **escolha do usuário**, em *Ajustes → Com música tocando*:
+Quem decide isso é `navigator.audioSession.type`, em *Ajustes → Com música tocando*:
 
 | Modo | `type` | O que acontece |
 |---|---|---|
-| Pausar e retomar *(padrão)* | `transient-solo` | O alarme toca e a música volta sozinha depois |
-| Só abaixar | `transient` | A música continua mais baixa — na prática o alarme costuma ficar inaudível por baixo dela |
-| Alarme acima de tudo | `playback` | Sempre toca; a música para e não volta |
+| Alarme acima de tudo *(padrão)* | `playback` | Sempre toca; a música para e não volta |
+| Pausar e retomar | `transient-solo` | Deveria tocar e devolver a música |
+| Só abaixar | `transient` | Deveria abaixar a música e tocar por cima |
+
+**Testado num iPhone com iOS 26: só `playback` emite som.** Nos outros dois o Safari aceita o `play()` e a sessão de áudio é tomada — o Spotify pausa — mas nada é audível. Por isso o padrão é `playback`, apesar de interromper a música: alarme que não toca não serve para nada. Os outros modos seguem disponíveis porque funcionam em Android e o comportamento do iOS pode mudar.
+
+A sirene dura 8s e some antes se você tocar na tela, para encurtar a interrupção.
 
 Fora do alarme a sessão fica em `ambient`, que não toma o áudio de ninguém. O tipo é declarado **imediatamente antes do `play()`** (o iOS aplica a categoria quando a reprodução começa) e devolvido para `ambient` quando o alarme para. Se o `play()` for recusado no modo escolhido, há um fallback automático para `playback`.
 

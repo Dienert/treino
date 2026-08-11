@@ -407,7 +407,8 @@
       <div class="lab">Vibração<small id="diagVib">…</small></div>
     </div>
   </div>
-  <p class="tip">Teste com a música tocando: aperte <b>Testar</b> acima com o Spotify ligado e veja qual modo funciona no seu aparelho.<br><br>
+  <p class="tip">No iPhone só <b>Alarme acima de tudo</b> emite som — nos outros dois o iOS aceita o comando e não sai áudio. A música para e você precisa despausar na mão; a sirene dura 8s, e some antes se você tocar na tela.<br><br>
+  Para conferir no seu aparelho: com o Spotify tocando, aperte <b>Testar</b> acima e veja a linha <b>Último teste</b>.<br><br>
   <b>Com a tela bloqueada o alarme não toca.</b> O iOS congela a página e nenhum site consegue tocar som ou avisar de fora dele. Por isso o app segura a tela acesa durante o descanso — deixe o celular destravado. Se você bloquear na mão, o alarme dispara assim que voltar ao app.<br><br>
   O som atravessa a chave lateral no silencioso e usa o <b>volume de mídia</b>.<br><br>
   No iPhone, nenhuma página web consegue vibrar o aparelho.</p>
@@ -569,7 +570,7 @@ const KEY = "treino-dienert:v1";        // mesmo formato da v1 — histórico an
 const PREF = "treino-dienert:prefs";
 
 let db = { sessions: {} };
-let prefs = { rest: 50, theme: "auto", pessoa: "dienert", audio: "transient-solo" };
+let prefs = { rest: 50, theme: "auto", pessoa: "dienert", audio: "playback", audioV: 2 };
 let tab = "A", date = todayISO(), view = "treino";
 let saveTimer = null;
 
@@ -588,7 +589,15 @@ function load(){
     const p = JSON.parse(raw || "null");
     if (p && typeof p === "object" && p.sessions) db = p;
   } catch (e) { console.warn("dados ilegíveis:", e); }
-  try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREF) || "{}")); } catch (e) {}
+  // o objeto guardado precisa ser lido à parte: depois do Object.assign,
+  // o padrão de `prefs` preenche as chaves ausentes e não dá mais para
+  // saber se o usuário tinha ou não aquela preferência
+  let guardado = {};
+  try { guardado = JSON.parse(localStorage.getItem(PREF) || "{}") || {}; } catch (e) {}
+  Object.assign(prefs, guardado);
+  // quem já usava o app guardou o padrão antigo ("transient-solo"), que no
+  // iPhone sai mudo — puxa uma única vez para o modo que de fato toca
+  if (guardado.audioV !== 2) { prefs.audio = "playback"; prefs.audioV = 2; savePrefs(); }
   migrar();
 }
 
@@ -1056,21 +1065,22 @@ const elBar = $("restBar"), elTime = $("rbTime"), elFill = $("rbFill"), elAlarm 
    de áudio e PARA o que estiver tocando. O <audio> também atravessa a
    chave lateral no silencioso.
 
-   navigator.audioSession.type decide como conviver com o Spotify. Os três
-   modos se comportam de forma bem diferente na prática:
+   navigator.audioSession.type decide como conviver com o Spotify. Testado
+   num iPhone com iOS 26: só "playback" emite som de fato. Nos outros dois
+   o Safari aceita o play() e a sessão é tomada, mas nada é audível — por
+   isso "playback" é o padrão, mesmo interrompendo a música. Alarme que
+   não toca não serve para nada.
 
-     transient-solo  pausa o outro app e ele VOLTA SOZINHO no fim  (padrão)
-     transient       era para só abaixar o volume do outro app, mas na
-                     prática o alarme costuma ficar inaudível por baixo
-     playback        o alarme sempre toca, o outro app para e não volta
-
-   É escolha do usuário, em Ajustes, porque o comportamento real varia
-   com a versão do iOS.
+   Os outros modos continuam disponíveis: em Android eles funcionam, e o
+   comportamento do iOS pode mudar de versão para versão.
    ------------------------------------------------------------------ */
 const MODOS_AUDIO = {
-  "transient-solo": { rot:"Pausar e retomar", desc:"O alarme toca e a música volta sozinha depois" },
-  "transient":      { rot:"Só abaixar",       desc:"A música continua mais baixa — pode deixar o alarme fraco" },
-  "playback":       { rot:"Alarme acima de tudo", desc:"Sempre toca, mas a música para e não volta" },
+  "playback":       { rot:"Alarme acima de tudo",
+                      desc:"Sempre toca. A música para e você precisa despausar — é o único que funciona no iPhone." },
+  "transient-solo": { rot:"Pausar e retomar",
+                      desc:"A música deveria voltar sozinha. No iPhone costuma sair sem som nenhum." },
+  "transient":      { rot:"Só abaixar",
+                      desc:"A música continua mais baixa. No iPhone costuma sair sem som nenhum." },
 };
 let alarmEl = null, audioArmed = false, alarmTocando = false, alarmIniciou = false;
 
@@ -1171,8 +1181,10 @@ function playAlarmNow(){
       try { alarmEl.play().catch(() => {}); } catch (e) {}
     });
   } catch (e) {}
+  // 8s bastam para você ouvir, e quanto mais curta a sirene menos tempo a
+  // música do outro app fica interrompida
   clearTimeout(alarmStop);
-  alarmStop = setTimeout(stopAlarmSound, 12000);
+  alarmStop = setTimeout(stopAlarmSound, 8000);
 }
 function stopAlarmSound(){
   clearTimeout(alarmStop);
