@@ -16,7 +16,7 @@ Atende duas pessoas, cada uma com o seu plano e o seu histórico:
 - **Uma linha por série**: `−` `carga` `+` `✓`, com alvos de 38–58px de largura por 42px de altura. Os `−`/`+` andam de 2,5 em 2,5 kg.
 - **Teclado numérico próprio**: tocar na carga abre uma folha na parte de baixo da tela com teclas grandes e atalhos (−2,5 / +2,5 / +5 / +10). Não existe `<input>` de texto na lista — veja *Por que um teclado próprio* abaixo.
 - **Destaque "agora"** no primeiro exercício incompleto. Ao terminar um exercício ele se recolhe num resumo verde e a tela rola sozinha para o próximo.
-- **Carga herdada**: ao marcar uma série, a carga da anterior é preenchida sozinha. O botão *"↺ Repetir as cargas da última vez"* preenche o exercício inteiro com o que você fez da última vez.
+- **Carga herdada na hora**: definiu o peso da série 1, as seguintes já aparecem com ele. Corrigir a série 1 corrige as herdadas junto; um peso que você digitou à mão numa série específica nunca é sobrescrito (a herança é marcada com `auto` no registro). O botão *"↺ Repetir as cargas da última vez"* preenche o exercício inteiro com o que você fez da última vez.
 - **Descanso automático** (50s por padrão, ajustável em Ajustes): começa ao marcar uma série, com barra fixa mostrando a contagem, `Pular` e `+15s`.
 - **Alarme impossível de perder**: tela cheia vermelha piscando, sirene de dois tons e o nome da próxima série. Fecha ao tocar ou sozinho em 15s. Há um botão *Testar* em Ajustes, com diagnóstico do que este aparelho suporta.
 - **Tela acesa** durante o descanso, via Screen Wake Lock.
@@ -75,19 +75,29 @@ O único `<input>` que sobrou é o seletor de data no topo, que abre um seletor 
 
 ## Sobre o alarme (e o iPhone)
 
-O alarme tem dois caminhos de som, de propósito:
+O alarme é **um elemento `<audio>`** tocando um WAV de sirene gerado em tempo de execução (`makeAlarmClip`), destravado no primeiro toque na tela. O clipe começa com 0,15s de silêncio de propósito: o destravamento faz `play()` seguido de `pause()` imediato, e assim não escapa ruído nenhum.
 
-1. **Um elemento `<audio>`** tocando um WAV de sirene gerado em tempo de execução (`makeAlarmClip`). É o caminho principal, porque **a chave lateral do iPhone no silencioso silencia o Web Audio no Safari, mas não silencia um `<audio>`**. O app também declara `navigator.audioSession.type = "playback"` quando disponível.
-2. **Osciladores do Web Audio** agendados com antecedência (`osc.start(t)` com `t` no futuro) para a contagem 3-2-1 e o alarme. Como a agenda vive dentro do `AudioContext` e não em `setTimeout`, ela sobrevive ao estrangulamento de timers de JS quando o navegador vai para segundo plano.
+**Não há Web Audio aqui, e isso é deliberado.** No iOS, só instanciar um `AudioContext` já toma a sessão de áudio e **para** o que estiver tocando no Spotify. Um `<audio>` com a sessão declarada como `transient` apenas abaixa o volume do outro app durante o alarme.
 
-Ambos só destravam dentro de um gesto do usuário. O clipe começa com 0,15s de silêncio justamente para o destravamento (`play()` seguido de `pause()` imediato) não deixar escapar nenhum ruído.
+```js
+navigator.audioSession.type = "transient";
+```
+
+Os tipos importam: `playback` interrompe o outro app; `transient` abaixa e devolve. Ambos atravessam a chave lateral no silencioso.
 
 **O volume do alarme é o volume de mídia do aparelho** — se estiver baixo, o alarme fica baixo, mesmo com o toque alto.
 
+### Tela bloqueada: o alarme não toca, e não tem como
+
+Com a tela bloqueada ou o Safari em segundo plano, o iOS congela os timers de JS e suspende o áudio da página. **Nenhum site consegue tocar som ou emitir alerta de fora dele** — não é limitação deste app, é como a plataforma funciona. Notificação local agendada também não existe para web no iOS.
+
+O que dá para fazer, e está feito:
+
+- durante o descanso o app pede um **Screen Wake Lock**, então a tela não apaga sozinha — deixe o celular destravado e o alarme toca normalmente;
+- se você bloquear na mão, ao voltar ao app o relógio é recalculado pelo horário real e **o alarme dispara na hora**, atrasado mas dispara.
+
+A tela **Ajustes** mostra o estado real do wake lock e do áudio no seu aparelho.
+
 ### Vibração: não existe no iPhone
 
-O Safari no iOS não implementa a Vibration API. Nenhuma página web consegue vibrar um iPhone — não é limitação deste app. A tela **Ajustes** mostra o que o seu aparelho de fato suporta. Em Android o app vibra normalmente.
-
-### Tela bloqueada
-
-Durante o descanso o app pede um Screen Wake Lock para a tela não apagar. Se você bloquear a tela na mão, o iOS suspende o áudio e o alarme é melhor-esforço.
+O Safari no iOS não implementa a Vibration API. Nenhuma página web consegue vibrar um iPhone. Em Android o app vibra normalmente.

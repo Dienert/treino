@@ -387,11 +387,15 @@
       <div class="lab">Som<small id="diagSom">…</small></div>
     </div>
     <div class="line">
+      <div class="lab">Tela acesa no descanso<small id="diagWake">…</small></div>
+    </div>
+    <div class="line">
       <div class="lab">Vibração<small id="diagVib">…</small></div>
     </div>
   </div>
-  <p class="tip">No iPhone, o Safari não consegue vibrar o aparelho — nenhuma página web consegue.<br>
-  O som do alarme passa mesmo com a chave lateral no silencioso, mas <b>suba o volume</b>: ele usa o volume de mídia.</p>
+  <p class="tip"><b>Com a tela bloqueada o alarme não toca.</b> O iOS congela a página e nenhum site consegue tocar som ou avisar de fora dele. Por isso o app segura a tela acesa durante o descanso — deixe o celular destravado. Se você bloquear na mão, o alarme dispara assim que voltar ao app.<br><br>
+  O som passa mesmo com a chave lateral no silencioso e não para o que estiver tocando no Spotify, só abaixa. Ele usa o <b>volume de mídia</b>.<br><br>
+  No iPhone, nenhuma página web consegue vibrar o aparelho.</p>
 
   <h2 class="sec">Aparência</h2>
   <div class="group">
@@ -805,6 +809,23 @@ function paintRow(row, load, ex){
   field.classList.toggle("vazio", !load);
 }
 
+/** Copia a carga da série `n` para as seguintes assim que você a define.
+ *  Só mexe nas que estão vazias ou que vieram desta mesma herança
+ *  (marcadas com `auto`) — uma carga posta à mão nunca é sobrescrita,
+ *  e corrigir a série 1 corrige as herdadas junto. */
+function herdar(ex, n, row){
+  const arr = setsOf(session(true), ex, true);
+  const load = arr[n].load;
+  if (!load) return;
+  const rows = row.closest(".card").querySelectorAll(".srow");
+  for (let m = n + 1; m < ex.sets; m++) {
+    const st = arr[m];
+    if (st.done || (st.load && !st.auto)) continue;
+    st.load = load; st.auto = true;
+    if (rows[m]) paintRow(rows[m], load, ex);
+  }
+}
+
 /** Move o destaque "agora" para o primeiro exercício incompleto. */
 function refreshNow(scroll){
   const now = nextIndex();
@@ -839,7 +860,7 @@ elList.addEventListener("click", e => {
     arr.slice(0, ex.sets).forEach((st, n) => {
       const src = prev.sets[n] || prev.sets[prev.sets.length - 1];
       if (src && src.load) {
-        st.load = src.load;
+        st.load = src.load; delete st.auto;
         paintRow(card.querySelectorAll(".srow")[n], src.load, ex);
       }
     });
@@ -858,7 +879,9 @@ elList.addEventListener("click", e => {
       ? (parseFloat(lastPerformed(ex.id)?.sets[n]?.load) || 0)   // parte da última carga
       : atual;
     arr[n].load = String(Math.max(0, Math.round((base + inc) * 10) / 10));
+    delete arr[n].auto;                 // agora é um valor posto à mão
     paintRow(row, arr[n].load, ex);
+    herdar(ex, n, row);
     save();
     return;
   }
@@ -954,7 +977,9 @@ function commitPad(){
   if (!padEx) return;
   const arr = setsOf(session(true), padEx, true);
   arr[padN].load = padBuf;
+  delete arr[padN].auto;               // digitado à mão
   paintRow(padRow, padBuf, padEx);
+  herdar(padEx, padN, padRow);
   save();
 }
 function closePad(){
@@ -1007,18 +1032,19 @@ let restEnd = 0, restTick = null, restLabel = "";
 const elBar = $("restBar"), elTime = $("rbTime"), elFill = $("rbFill"), elAlarm = $("alarm");
 
 /* ------------------------------------------------------------------
-   Áudio no iPhone — três armadilhas, três defesas:
+   Áudio no iPhone
 
-   1. A chave lateral no silencioso silencia o Web Audio no Safari, mas
-      NÃO silencia um elemento <audio>. Por isso o alarme principal é um
-      <audio> tocando um WAV gerado aqui mesmo, e não osciladores.
-   2. navigator.audioSession.type = "playback" (Safari 16.4+) declara que
-      isto é reprodução de mídia, e não um bipe de interface.
-   3. Tanto o AudioContext quanto o <audio> só destravam dentro de um
-      gesto do usuário — e resume() é assíncrono, então nada pode ser
-      agendado antes dele resolver.
+   O alarme é um elemento <audio> tocando um WAV gerado aqui mesmo. Não
+   usamos Web Audio: só instanciar um AudioContext no iOS já toma a sessão
+   de áudio e PARA o que estiver tocando (Spotify, podcast). O <audio>
+   também tem a vantagem de atravessar a chave lateral no silencioso.
+
+   navigator.audioSession.type = "transient" é o que impede a interrupção:
+   "transient" abaixa momentaneamente o volume do outro app em vez de
+   pará-lo, e ainda assim ignora o modo silencioso. ("playback", que
+   estava aqui antes, é justamente o que interrompe.)
    ------------------------------------------------------------------ */
-let audioCtx = null, alarmEl = null, audioArmed = false;
+let alarmEl = null, audioArmed = false;
 
 /** Renderiza a sirene de dois tons num WAV e devolve um blob URL.
  *  Começa com 0,15s de silêncio de propósito: o destravamento faz
@@ -1047,11 +1073,8 @@ function makeAlarmClip(){
 }
 
 function unlockAudio(){
-  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-  } catch (e) { audioCtx = null; }
+  // "transient": abaixa o áudio do outro app em vez de interrompê-lo
+  try { if (navigator.audioSession) navigator.audioSession.type = "transient"; } catch (e) {}
 
   if (!alarmEl) {
     alarmEl = new Audio(makeAlarmClip());
@@ -1091,64 +1114,25 @@ function stopAlarmSound(){
   try { alarmEl.currentTime = 0; } catch (e) {}
 }
 
-/* -- contagem regressiva agendada no Web Audio: sobrevive ao
-      estrangulamento dos timers de JS em segundo plano -- */
-let scheduled = [];
-function beep(at, freq, dur, gainPeak, type){
-  const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
-  osc.type = type || "square";
-  osc.frequency.setValueAtTime(freq, at);
-  g.gain.setValueAtTime(0.0001, at);
-  g.gain.exponentialRampToValueAtTime(gainPeak, at + 0.012);
-  g.gain.setValueAtTime(gainPeak, at + dur - 0.03);
-  g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-  osc.connect(g).connect(audioCtx.destination);
-  osc.start(at); osc.stop(at + dur + 0.02);
-  scheduled.push(osc);
-}
-/** Sempre calcula a partir de `restEnd`, então pode ser chamada de novo
- *  depois do resume() sem errar o horário. */
-function scheduleSounds(){
-  cancelSounds();
-  if (!audioCtx) return;
-  const agendar = () => {
-    if (!audioCtx || audioCtx.state !== "running") return;
-    const sec = (restEnd - Date.now()) / 1000;
-    if (sec <= 0) return;
-    const t0 = audioCtx.currentTime;
-    for (let k = 3; k >= 1; k--) if (sec - k > 0.05) beep(t0 + sec - k, 700, 0.07, 0.14, "sine");
-    for (let c = 0; c < 5; c++) {
-      const at = t0 + sec + c * 1.25;
-      beep(at,        980,  0.20, 0.45);
-      beep(at + 0.24, 1460, 0.20, 0.45);
-      beep(at + 0.48, 980,  0.20, 0.45);
-      beep(at + 0.72, 1460, 0.30, 0.45);
-    }
-  };
-  if (audioCtx.state === "running") agendar();
-  else audioCtx.resume().then(agendar).catch(() => {});
-}
-function cancelSounds(){
-  for (const o of scheduled) { try { o.stop(); } catch (e) {} }
-  scheduled = [];
-}
-
-/* -- manter a tela acesa durante o descanso -- */
+/* -- manter a tela acesa durante o descanso.
+      Isto é o que de fato salva o alarme: com a tela apagada o iOS congela
+      os timers de JS e suspende o áudio, e nenhuma página web consegue
+      tocar nada. Impedir a tela de apagar evita o problema na origem. -- */
 let wakeLock = null;
 async function keepAwake(on){
   try {
     if (on && !wakeLock && "wakeLock" in navigator) {
       wakeLock = await navigator.wakeLock.request("screen");
-      wakeLock.addEventListener("release", () => { wakeLock = null; });
+      wakeLock.addEventListener("release", () => { wakeLock = null; renderDiag(); });
     } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
   } catch (e) { wakeLock = null; }
+  renderDiag();
 }
 
 function startRest(label){
   restLabel = label || "";
   restEnd = Date.now() + prefs.rest * 1000;
   elBar.classList.add("show");
-  scheduleSounds();
   keepAwake(true);
   if (!restTick) restTick = setInterval(tickRest, 200);
   tickRest();
@@ -1162,13 +1146,12 @@ function tickRest(){
 }
 function stopRest(){
   clearInterval(restTick); restTick = null;
-  cancelSounds(); stopAlarmSound(); keepAwake(false);
+  stopAlarmSound(); keepAwake(false);
   elBar.classList.remove("show");
 }
 
 function fireAlarm(){
   clearInterval(restTick); restTick = null;
-  scheduled = [];                                  // os bipes já estão tocando; não cancelar
   elBar.classList.remove("show");
   $("alarmNext").textContent = restLabel;
   elAlarm.classList.add("show");
@@ -1180,7 +1163,7 @@ function fireAlarm(){
 function dismissAlarm(){
   if (!elAlarm.classList.contains("show")) return;
   elAlarm.classList.remove("show");
-  cancelSounds(); stopAlarmSound(); keepAwake(false);
+  stopAlarmSound(); keepAwake(false);
   if (navigator.vibrate) navigator.vibrate(0);
 }
 $("alarmOk").addEventListener("click", dismissAlarm);
@@ -1188,15 +1171,14 @@ elAlarm.addEventListener("click", dismissAlarm);
 $("rbSkip").addEventListener("click", stopRest);
 $("rbPlus").addEventListener("click", () => {
   restEnd += 15000;
-  scheduleSounds();
   tickRest();
 });
-// volta do segundo plano: o setInterval pode ter sido estrangulado e o iOS
-// suspende o AudioContext — ressincroniza o relógio e reagenda o som
+// Voltando do segundo plano: o iOS congelou os timers enquanto estávamos
+// fora, então o relógio é recalculado pelo horário real. Se o descanso
+// acabou nesse meio tempo, o alarme dispara agora — atrasado, mas dispara.
 document.addEventListener("visibilitychange", () => {
   if (document.hidden || !elBar.classList.contains("show")) return;
   keepAwake(true);
-  scheduleSounds();
   tickRest();
 });
 
@@ -1369,12 +1351,18 @@ $("btnTestAlarm").addEventListener("click", () => {
 
 /** Mostra, em Ajustes, o que este aparelho de fato suporta. */
 function renderDiag(){
-  const som = $("diagSom"), vib = $("diagVib");
+  const som = $("diagSom"), vib = $("diagVib"), wake = $("diagWake");
   if (!som) return;
-  som.textContent = audioArmed ? "pronto ✓" : "toque na tela para liberar";
-  som.style.color = audioArmed ? "var(--done)" : "var(--muted)";
-  vib.textContent = navigator.vibrate ? "suportada ✓" : "não existe no iPhone";
-  vib.style.color = navigator.vibrate ? "var(--done)" : "var(--muted)";
+  const pinta = (el, texto, bom) => {
+    el.textContent = texto;
+    el.style.color = bom ? "var(--done)" : "var(--muted)";
+  };
+  pinta(som, audioArmed ? "pronto ✓" : "toque na tela para liberar", audioArmed);
+  pinta(wake,
+    !("wakeLock" in navigator) ? "não suportada neste navegador"
+      : wakeLock ? "ativa agora ✓" : "será ligada no descanso",
+    !!wakeLock);
+  pinta(vib, navigator.vibrate ? "suportada ✓" : "não existe no iPhone", !!navigator.vibrate);
 }
 $("btnClearDay").addEventListener("click", () => {
   const k = keyOf(date, pessoa, tab);
